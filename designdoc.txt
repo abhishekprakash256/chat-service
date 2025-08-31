@@ -1,0 +1,728 @@
+The design of the chat apps - whatsapps 
+
+reqs -- 
+
+- people join with unique hash link , (session manager)
+- login with name , Login system
+- message storage  (postgresql, message_id (unique hash), name, message, time ) 
+- send and store message even if offline  
+- fetch message when come online  
+- notifications for message 
+- send and read reciepts
+
+
+
+Session manager -- 
+
+- The session manager uses the same hash_id for connecting the backedn and the front-end api 
+- The backend has the session manager , the connect the user based on the hash and the auth 
+- The front-end opens the WebSocket client to connect with backend session id, sends/recieves message via sessionid 
+
+
+Flow -- 
+
+user go to registration -- 
+
+- The name has to be different
+- register to the page 
+- gets the unique_id, that has to be stored in the redis
+- make the register with using go 
+- Redis asscess has to made in go ?? 
+
+
+
+## ✅ High-Level Design Summary
+
+### 🔧 Tech Stack Overview
+
+| Component | Technology                    |
+| --------- | ----------------------------- |
+| Frontend  | Next.js, WebSocket (react-use-WebSocket)  |
+| Backend   | Go (with Gorilla WebSocket)   |
+| DB        | postgresql |
+| Cache     | Redis (session/user/presence) |
+
+
+
+## 🔐 Session Manager Logic
+
+### ✅ Backend Session Manager (in Go):
+
+* Owns the session hash (`hash_id`)
+* Verifies users during registration/login
+* Connects WebSocket users using `session_id + name`
+* Stores session & user info temporarily in **Redis**
+
+### ✅ Frontend (Next.js):
+
+* Calls Go API to register a user
+* Stores the hash locally (in route like `/chat/user/<hash>/message`)
+* Opens WebSocket connection: `ws://yourapp/ws?session_id=<hash>&username=Abhi`
+
+
+## 🧭 Flow: Registration → Login → Messaging
+
+### 1️⃣ **Registration Phase**
+
+#### Frontend Page
+
+* `/chat/register` — registration form with 2 input fields
+
+#### Backend Endpoints
+
+| Endpoint                              | Description                                        |
+| ------------------------------------- | -------------------------------------------------- |
+| `POST /chat/register/first_user_inp`  | Submit first user name                             |
+| `POST /chat/register/second_user_inp` | Submit second user name                            |
+| `POST /chat/register/submit`          | Final submit: validates + creates session in Redis |
+
+#### Redis Schema Example
+
+```redis
+HSET session:<session_id> users user1 user2
+EXPIRE session:<session_id> 2h
+```
+
+### 2️⃣ **Login Phase**
+
+#### Frontend Pages
+
+* `/chat/user/login` → login UI with session ID + username input
+* `/chat/user/username_submit` → submit the username
+* On success, redirect to `/chat/user/<hash>/message`
+
+#### Backend Endpoints
+
+| Endpoint                             | Description                   |
+| ------------------------------------ | ----------------------------- |
+| `POST /chat/user/username_submit`    | Check if user exists in Redis |
+| `GET  /chat/user/<hash>/message_inp` | Serve message input page      |
+
+- use the username to store the message  
+
+
+### 3️⃣ **Chat + Messaging Phase**
+
+#### WebSocket Connection
+
+```ts
+ws://yourserver/ws?session_id=abc123&username=Abhi
+```
+
+#### Backend WebSocket Logic:
+
+* Validate `session_id` and `username` from Redis
+* Add user to in-memory map
+* Route messages
+* Store each message to MongoDB:
+
+```json
+{
+  "_id": ObjectId(),
+  "chat_id": "abc123",
+  "sender_name": "Abhi",
+  "reciever": "Anny",
+  "message": "Hello",
+  "timestamp": ISODate()
+}
+```
+
+#### Backend Message Endpoints (optional fallback)
+
+| Endpoint                              | Description                    |
+| ------------------------------------- | ------------------------------ |
+| `POST /chat/user/<hash>/message_send` | Send message (if not using WS) |
+
+
+
+
+
+How the seession manager works and the flow -- > 
+
+session manager is written in go , chat_id is the hash to find the user and connect the user 
+
+the chat_id is the same hash that is generated when user register and they are given a hash 
+
+
+Login --> 
+can use postgresql to store the message data and also the login hash as primary key and user names 
+
+
+Schema -- 
+
+login table -- 
+
+chat_id (hash) , user_one (name stored encrypted) , user_two (name stored encrypted)
+
+CREATE TABLE chat.chat_login (
+    chat_id TEXT PRIMARY KEY,                -- same hash from session
+    user_one BYTEA NOT NULL,                 -- encrypted username
+    user_two BYTEA NOT NULL                  -- encrypted username
+);
+
+
+message table -- 
+
+chat_id (hash), message_id (UUID) , sender_name (name stored encrypted), reciver_name (name stored encrypted) , message (store encrypted) , timestamp , read
+
+CREATE TABLE chat.chat_message (
+    message_id     UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    chat_id        TEXT REFERENCES chat.chat_login(chat_id) ON DELETE CASCADE,
+    sender_name    BYTEA NOT NULL,           -- encrypted
+    receiver_name  BYTEA NOT NULL,           -- encrypted
+    message        BYTEA NOT NULL,           -- encrypted
+    timestamp      TIMESTAMPTZ DEFAULT now(),
+    read           BOOLEAN DEFAULT false
+);
+
+
+- The encryption can be handled by the go layer 
+
+The notification and the online status 
+
+| Feature          | Backed by     | Description                        |
+| ---------------- | ------------- | ---------------------------------- |
+| Online status    | Redis         | `SET presence:<user>` with expiry  |
+| WebSocket ping   | Redis         | Refresh `EX 300` every few seconds |
+| Message delivery | WebSocket     | If online, send real-time          |
+| Message fallback | Redis         | If offline, `LPUSH notify:<user>`  |
+| Fetch missed     | Redis         | `LRANGE notify:<user>` on connect  |
+| Scale messaging  | Redis Pub/Sub | Multi-node push sync               |
+
+
+
+Perosonal notes -- 
+
+The backend makes the main server using WebSocket that can run on any port and opens the bidirectional connection , also the backend is responisible for the routing system for the messsage and deliver to the client connection 
+The frontend opens a WebSocket connection in the browser and then get ready to accept the connection, we need to recoginze the client connection and deliver the correct message instead to broadcasdting ? also both see the meesage 
+meawhile save the message as well for  each other and keep the order correct 
+two tables can be used one login table - or can be used also as message routing to find the other member, messages can be stored in the message table 
+broadcast the message so both can see the message also to the coorect member can see the message as well , use the chathash_id and user1 , user2  
+The redis give the unque hash for chat_id 
+the first_user and second_user has different name , the name will be encrypted before storage 
+for the conncetion the name and the chat_id will be used 
+
+
+
+Routing Mechanism for chat session manager -->
+
+- what identifications we have for user 
+  - chat_id , user name -> session_id (session:abc123:Abhi) store in the redis , we can get by sender_name and chatid 
+  - How to know the other person to deliver the message -> use redis get chatid and reciver name 
+  - When the person join the chat sesion , the first time session is initilaized and hearbeat protocol for updating the connection and data is saved in redis 
+  - After joining the session just start the hearbeat protocol and check for the connection if connected
+  - When the logout button clicked stop the hearbeat protocol  
+  - whenever the login happens initilaize the session in redis ? with other user as well ? sender and reciever name as well 
+
+
+The session storage in the redis --> 
+```
+type SessionData struct {
+	ChatID      string
+	Sender       string
+	Reciever	string
+	LastSeen    time.Time
+	WSConnected int
+	Notify      int
+}
+```
+
+
+
+
+Your proposed **Routing Mechanism for the Chat Session Manager** is well-structured. Here's a breakdown of your plan along with **recommendations**, **clarifications**, and a clean **flowchart-style explanation**:
+
+---
+
+## ✅ **Core Identifiers**
+
+* `ChatID` → Identifies the conversation room.
+* `UserName` (Sender/Receiver) → Identifies the individual.
+* `SessionKey` → `session:<chat_id>:<user>` used as the **Redis key**.
+
+Example key:
+
+```redis
+session:abc123:Abhi
+```
+
+---
+
+## 🧠 **Redis Session Schema**
+
+You defined:
+
+```go
+type SessionData struct {
+	ChatID      string
+	Sender      string
+	Receiver    string
+	LastSeen    time.Time
+	WSConnected int  // 1 = connected, 0 = disconnected
+	Notify      int  // 1 = send notification, 0 = don't
+}
+```
+
+✅ This is perfect for storing per-user session info.
+
+---
+
+## 🔁 **Chat Session Flow**
+
+### 1. **User Login**
+
+* Client authenticates.
+* `session:<chatID>:<sender>` is initialized with:
+
+  * `WSConnected = 1`
+  * `LastSeen = now`
+* Also store receiver’s session stub if not present (`WSConnected = 0`, `Notify = 0`).
+
+✅ Yes, **initialize both sender and receiver's session** during login.
+
+
+### 2. **User Joins Chat Session**
+
+* WebSocket connection established.
+* Start **heartbeat** every 30s:
+
+  * Update `LastSeen`
+  * Keep `WSConnected = 1`
+
+
+
+### 3. **Sending Messages**
+
+* Sender sends message → server gets `chatID` and `receiver name`.
+* Look up Redis key: `session:<chatID>:<receiver>`
+* Check `WSConnected`:
+
+  * If `1`: Push via WebSocket.
+  * If `0`: Set `Notify = 1` for later delivery/alert.
+
+
+
+### 4. **Logout / Disconnect**
+
+* Stop heartbeat.
+* Set `WSConnected = 0`, update `LastSeen`.
+
+
+### 5. **Receiver Reconnects**
+
+* On reconnect/login:
+
+  * Check `Notify == 1` → trigger client-side message polling or push.
+  * Reset `Notify = 0`.
+
+
+
+## The arhitecture diagram
+
+Frontend Browser (User1) <-- WS -->|
+                                   |==> Backend WebSocket Server (Go)
+Frontend Browser (User2) <-- WS -->|           |
+                                   |           |
+                        Redis (for presence)   |
+                                   |           |
+                        Postgres (chat + messages)
+
+when the user connects to the WebSocket send the user name and the chathash_id as well so the server knows where to send and receve the message 
+
+chat_id to find correct session
+
+user_one, user_two to match users
+
+Route the message to both connections
+
+Save message to DB immediately (preserve order)
+
+The message sample --- > 
+
+{
+  "_id": ObjectId(),
+  "chat_id": "abc123",
+  "sender_name": "Abhi",
+  "receiver_name": "Anny",
+  "message": "Hello",
+  "timestamp": ISODate("2025-07-06T15:00:00Z"),
+  "read": TRUE  // null if not read
+}
+
+
+
+| message_id | chat_id | sender_name | receiver_name | message | timestamp          | read |
+|------------|---------|-------------|----------------|---------|---------------------|------|
+| ...        | abc123  | "Abhi"      | "Anny"         | "Hello" | 2025-07-06 15:00:00 | TRUE |
+
+
+
+The read reciept -- 
+
+- it works by detection of the user open of the screen , scroll of screen , hover on the screen, called as viewoport detection
+- then frontenmd sends a read_recipt to server and server update it on the db 
+- sender frontend reciever the read_ack that the notification has been recieved , this all happens with the WebSocket so it's bidirectional
+
+
+
+Later -- 
+user is online 
+and the message notification
+
+
+session examoles in redis for 4 users -- 
+
+| Chat ID | Users_1 | Users_2 |
+| ------- | --------|----------
+| abc123  | Abhi    | Anny    |
+| def456  | Bob     | Cara    |
+
+
+The key and the field -- 
+
+| Redis Key             | Data Structure | Fields (example)                                                         |
+| --------------------- | -------------- | ------------------------------------------------------------------------ |
+| `session:abc123:Abhi` | Hash           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:00:00` <br> `notify: 0` |
+| `session:abc123:Anny` | Hash           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:55:00` <br> `notify: 1` |
+| `session:def456:Bob`  | Hash           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:01:00` <br> `notify: 0` |
+| `session:def456:Cara` | Hash           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:50:00` <br> `notify: 1` |
+
+
+The field description -- 
+
+| Field          | Description                                                              |
+| -------------- | ------------------------------------------------------------------------ |
+| `ws_connected` | `"1"` means user’s WebSocket is currently connected, `"0"` means offline |
+| `last_seen`    | Timestamp when user was last active or connected                         |
+| `notify`       | `"1"` means user has unread message notifications, `"0"` means none      |
+
+
+
+Table visulaization -- > 
+
+| Chat ID | User | Redis Key             | ws\_connected | last\_seen          | notify |
+| ------- | ---- | --------------------- | ------------- | ------------------- | ------ |
+| abc123  | Abhi | `session:abc123:Abhi` | 1             | 2025-07-08T20:00:00 | 0      |
+| abc123  | Anny | `session:abc123:Anny` | 0             | 2025-07-08T19:55:00 | 1      |
+| def456  | Bob  | `session:def456:Bob`  | 1             | 2025-07-08T20:01:00 | 0      |
+| def456  | Cara | `session:def456:Cara` | 0             | 2025-07-08T19:50:00 | 1      |
+
+
+
+Example --> 
+
+hash = abc123 , user = Abhi
+session:abc123:Abhi
+
+Store in the hash 
+
+HSET session:abc123:Abhi chat_id abc123
+HSET session:abc123:Abhi user Abhi
+HSET session:abc123:Abhi last_seen 2025-07-08T20:00:00
+HSET session:abc123:Abhi ws_connected 1
+HSET session:abc123:Abhi notify 0
+
+
+
+To maintain session cache, we use **Redis**, where each user in a chat has a dedicated **Hash** stored under a key like:
+
+```
+session:<chat_id>:<username>
+```
+
+Each hash stores the following fields:
+
+* `chat_id`: Unique identifier for the chat room
+* `user`: The user's name or ID
+* `last_seen`: Timestamp of last activity (can be updated on screen focus/movement or disconnection)
+* `ws_connected`: `1` if the user's WebSocket is currently connected, `0` if disconnected
+* `notify`: `1` if the user has unread messages, `0` if all messages are read , also check the user movement and the screen 
+
+---
+
+### 🧠 **Update Triggers:**
+
+* **`ws_connected`** is updated:
+
+  * Set to `1` when the user **connects via WebSocket**
+  * Set to `0` when the **WebSocket disconnects**
+
+* **`notify`** is updated:
+
+  * Set to `1` when a message is sent **and the recipient is offline** (`ws_connected = 0`)
+  * Set to `0` when the user **comes back online** or **reads the message**
+
+* **`last_seen`** can be updated:
+
+  * When the user **moves the mouse**, **focuses** the browser tab, or **disconnects**
+  * Used for showing "last active" status
+
+---
+
+### ✅ Example Redis Key:
+
+```text
+session:abc123:Abhi → {
+  chat_id: abc123,
+  sender: Abhi,
+  reciver: Anny,
+  last_seen: 2025-07-08T20:00:00,
+  ws_connected: 1,
+  notify: 0
+}
+```
+
+---
+
+### ✅ Summary:
+
+| Purpose          | Redis Field    | Updated When?                             |
+| ---------------- | -------------- | ----------------------------------------- |
+| Track connection | `ws_connected` | On WebSocket open/close                   |
+| Unread messages  | `notify`       | On message send (if recipient is offline) |
+| User activity    | `last_seen`    | On user movement, blur/focus, disconnect  |
+
+
+
+How to check if the user if online and check the status of the user --> 
+
+
+| Event                        | How to detect                        | What to update                                   |
+| ---------------------------- | ------------------------------------ | ------------------------------------------------ |
+| User switches tab (inactive) | `visibilitychange` event             | Optionally mark as inactive / update `last_seen` |
+| User comes back to tab       | `visibilitychange` event             | Update `last_seen` or `ws_connected`             |
+| User closes tab/window       | `beforeunload` event                 | Backend marks `ws_connected = 0`                 |
+| User interacts (mouse/key)   | `mousemove`, `keydown`, `scroll`     | Update `last_seen` timestamp                     |
+| WebSocket connection lost    | WebSocket `onclose` event on backend | Update `ws_connected = 0`                        |
+
+
+
+The case when the user get's offline and the other user sends the message and read reciepts is getting triggered -- 
+
+
+## ✅ Final Flow: Offline Message Handling and Read Receipt
+
+### 📤 1. **User A sends a message to User B**
+
+* Message is sent to the backend via WebSocket.
+* Payload contains: `chat_id`, `sender`, `receiver`, `message`, `timestamp`.
+
+---
+
+### 🗂️ 2. **Server stores the message**
+
+* **Insert** into the database (`read = false`).
+* In **Redis**, set a notify flag:
+
+```bash
+HSET session:<chat_id>:<user_B> notify 1
+```
+
+---
+
+### 🚫 3. **User B is offline**
+
+* Backend doesn't push the message.
+* WebSocket `ws_connected` is `0`.
+
+---
+
+### 🌐 4. **User B comes online**
+
+* WebSocket reconnects → backend sets:
+
+```bash
+HSET session:<chat_id>:<user_B> ws_connected 1
+```
+
+* Redis `notify = 1` signals unread messages exist.
+
+---
+
+### 📥 5. **User B fetches unread messages**
+
+* Frontend or backend queries:
+
+```sql
+SELECT * FROM messages
+WHERE chat_id = '<chat_id>' AND receiver = '<user_B>' AND read = false
+ORDER BY timestamp ASC;
+```
+
+* Backend sends these messages over WebSocket.
+
+---
+
+### 🧹 6. **After messages are fetched**
+
+* Mark messages as read in DB:
+
+```sql
+UPDATE messages
+SET read = true
+WHERE chat_id = '<chat_id>' AND receiver = '<user_B>' AND read = false;
+```
+
+* Clear Redis notify flag:
+
+```bash
+HSET session:<chat_id>:<user_B> notify 0
+```
+
+---
+
+
+* 🔁 **No message is lost**, even when the user is offline.
+* 🔕 **Notify flag is cleared** after reading.
+* 👁️ **Read receipt can be updated** reliably.
+* ⚡ **Fast lookup** for unread messages using Redis + DB.
+
+
+The user detection -- 
+
+- the clinet will use hearbeat protocol to deetcet the last_seen stamp and ws_connection as well 
+- Frontend WebSocket client sends heartbeat every 30 seconds:
+- For every heartbeat received:
+- Update last_seen in Redis.
+- Keep ws_connected = 1.
+- Backend also starts a timeout timer:
+- If no heartbeat is received in e.g. 45 seconds → set ws_connected = 0.
+
+
+
+The file structure of the app that can have redis and postgresql functionlaity -- 
+
+/your-app
+│
+├── cmd/                   # Entrypoint(s) for app
+│   └── server/            # `main.go` lives here
+│       └── main.go
+│
+├── internal/              # Your application core (business logic)
+│   ├── websocket/         # WebSocket handling
+│   │   └── handler.go
+│   │   └── hub.go
+│   │   └── client.go
+│   │
+│   ├── redis/             # Redis interactions
+│   │   └── client.go
+│   │   └── session.go
+│   │
+│   ├── postgres/          # PostgreSQL interactions
+│   │   └── db.go
+│   │   └── user_repo.go
+│   │   └── chat_repo.go
+│   │
+│   └── service/           # Business logic layer (use cases)
+│       └── chat_service.go
+│       └── user_service.go
+│
+├── config/                # Config and env setup
+│   └── config.go
+│
+├── pkg/                   # Shared utilities
+│   └── logger/            # Logging helpers
+│   └── utils/             # Helper functions
+│
+├── go.mod
+└── README.md
+
+
+Add the logging abilities as well for the data to be logged 
+
+when deploying the code we make pull the whole repo compile the code make the binary file for the entry point and run the binary file and clear the code files 
+we use MakeFile for that process 
+
+
+In a WebSocket-based chat system:
+
+### 🔹 When a user joins a chat room (e.g., `chat_id = abc123`):
+
+* They **open a WebSocket connection** to your backend like:
+
+```
+ws://example.com/ws?chat_id=abc123&sender=UserA&receiver=UserB
+```
+
+* On the backend, this connection is stored in memory like:
+
+```go
+key := fmt.Sprintf("%s:%s", chatID, sender)
+activeConnections[key] = conn
+```
+
+This means **each user gets their own WebSocket session** identified by:
+
+* `chat_id`
+* `user` (sender)
+
+---
+
+## 🌐 What About the Frontend URL?
+
+You can standardize the frontend route for both users using just the `chat_id`:
+
+```
+example.com/chat/abc123
+```
+
+### 🔁 Frontend handles which user is currently viewing:
+
+**How it works:**
+
+* When the frontend is rendered:
+
+  * You know the current user is `UserA` (via login/session).
+  * The other user (`UserB`) is determined via API (e.g., `/api/chat/abc123 → returns participants`).
+* You build the WebSocket URL dynamically:
+
+```js
+const ws = new WebSocket(
+  `ws://example.com/ws?chat_id=abc123&sender=UserA&receiver=UserB`
+);
+```
+
+### 🔒 You don’t need two frontend routes (`/chat/abc123` is enough).
+
+The backend handles routing the messages based on the sender/receiver from the WebSocket query params.
+
+---
+
+## 📦 Sample: Redis + In-Memory Storage Summary
+
+| Component        | Usage                                      |
+| ---------------- | ------------------------------------------ |
+| `/chat/abc123`   | Same route for both users                  |
+| WebSocket URL    | Includes `chat_id`, `sender`, `receiver`   |
+| Redis key        | `session:<chat_id>:<user>`                 |
+| In-memory conn   | `map[<chat_id>:<user>] => *websocket.Conn` |
+| Message delivery | Looks up receiver key and sends message    |
+
+---
+
+## 🔁 When Message Is Sent
+
+```plaintext
+User A sends → Server gets `receiver=UserB` →
+→ Looks up `abc123:UserB` in activeConnections →
+→ If connected: Write to WebSocket
+→ Else: Save to Redis + set notify = 1
+```
+
+
+
+Links -- 
+
+- https://medium.com/@akgol97_/building-a-restful-api-with-go-and-postgres-guide-64ccd3da6bc
+- https://medium.com/@m.romaniiuk/system-design-chat-application-1d6fbf21b372
+- https://www.npmjs.com/package/react-use-websocket
+- https://www.youtube.com/watch?v=X_DdIXrmWOo&t=102s
+- https://redis.io/docs/latest/develop/clients/go/           #for redis client 
+- https://pkg.go.dev/github.com/jackc/pgx/v5#AppendRows       #for pgsql 
+- https://medium.com/bitaksi-tech/object-oriented-approach-in-go-179c85486c76
+- https://arshsharma.com/posts/2024-12-16-oops-golang/
+- https://www.youtube.com/watch?v=dniVs0xKYKk
+- https://www.youtube.com/watch?v=pKpKv9MKN-E
+
+
+
