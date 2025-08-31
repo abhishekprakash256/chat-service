@@ -1,0 +1,41 @@
+Two services one for the registration and other for the chat 
+
+
+pages -- 
+
+The main page -- 
+/demo/chat-registration
+
+
+The page to register the person and give the hash code -- 
+
+user_1
+user_2
+
+submit 
+
+
+#-----------------------------------
+
+/demo/chat/user/<hash>
+
+user 
+
+login
+
+
+#--------------------------------
+
+/demo/chat/user/<hash>
+
+
+inp 
+/user/<hash>
+
+send
+
+logout 
+
+endchat 
+
+
