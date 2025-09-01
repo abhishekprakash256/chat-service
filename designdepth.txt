@@ -1,44 +1,6 @@
 Two services one for the registration and other for the chat 
 
-
-pages -- 
-
-The main page -- 
-/demo/chat/register
-
-
-The page to register the person and give the hash code -- 
-
-user_1
-user_2
-
-submit 
-
-
-#-----------------------------------
-
-/demo/chat/user/<hash>
-
-user  /chat/user/<hash>/username    --> post the user name 
-
-login   /chat/user/username/login.   ---> login the user
-
-
-#--------------------------------
-
-/demo/chat/user/<hash>
-
-
-inp
-
-chat/user/<hash>/message   --> post link
-
-send          ---> send button
-
-logout       ----> logout button
-
-endchat        ---> endchat button
-
+The access to pgsql and redis are handled by flask and go as per need 
 
 
 
@@ -51,11 +13,13 @@ this should call the backend flask server to pass the user_1 , user_2 , submit
 
 flask server -->
 
-chat-server/user1.   --> user1
+The Flask access the redis to get the hash 
 
-chat-server/user2    --> user2
+user1.   --> user1. in the flask , POST , this should access the GO server for regisgtration to access PGSQL
 
-chat-server/register ---> register 
+user2    --> user2 , in the flask , POST , this should access the GO server for regisgtration to access PGSQL
+
+chat-server/register ---> register , in the flask , 
 
 
 give the user out
@@ -63,5 +27,22 @@ give the user out
 
 nextjs page for login --> 
 
+/demo/chat/user/<hash>   GET request
+
+in the fask 
+
+user       ---> 
+
+login   --->    /chat/user/username/login.   ---> login the user , POST , Go server validates the data and let the user in 
 
 
+message  ---> 
+
+inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message 
+
+/chat/user/<hash>/message  --> read the message and send the message through the backend of GO 
+
+
+logout --> /demo/chat/user/logout --> to nextjs server for logout , GET request
+
+endchat --> /demo/chat/user/logout    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request
