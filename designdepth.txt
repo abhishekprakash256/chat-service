@@ -71,8 +71,6 @@ data :
 
 
 
-
-
 give the user out
 
 
@@ -85,6 +83,24 @@ in the fask
 user       --->
 
 login   --->    /chat-server/user/username/login.   ---> login the user , POST , Go server validates the data and let the user in  --> internal
+
+
+send to the api
+
+data : {
+
+user : "Abhi"
+hash : "abc123"
+
+}
+
+request to get the url
+
+data :
+{
+    status : OK
+    code : 200
+}
 
 
 message  ---> 
