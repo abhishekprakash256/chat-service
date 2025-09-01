@@ -1,0 +1,67 @@
+Two services one for the registration and other for the chat 
+
+
+pages -- 
+
+The main page -- 
+/demo/chat/register
+
+
+The page to register the person and give the hash code -- 
+
+user_1
+user_2
+
+submit 
+
+
+#-----------------------------------
+
+/demo/chat/user/<hash>
+
+user  /chat/user/<hash>/username    --> post the user name 
+
+login   /chat/user/username/login.   ---> login the user
+
+
+#--------------------------------
+
+/demo/chat/user/<hash>
+
+
+inp
+
+chat/user/<hash>/message   --> post link
+
+send          ---> send button
+
+logout       ----> logout button
+
+endchat        ---> endchat button
+
+
+
+
+
+services used -->
+
+nextjs for url of the page /demo/chat/register
+
+this should call the backend flask server to pass the user_1 , user_2 , submit 
+
+flask server -->
+
+chat-server/user1.   --> user1
+
+chat-server/user2    --> user2
+
+chat-server/register ---> register 
+
+
+give the user out
+
+
+nextjs page for login --> 
+
+
+
