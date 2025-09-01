@@ -117,6 +117,11 @@ data : {
     code : 200
 }
 
+data : {
+    status : Failed
+    code : 400
+}
+
 
 inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message  --> internal
 
