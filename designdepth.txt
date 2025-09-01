@@ -69,16 +69,13 @@ data :
 
 
 
-
-
 give the user out
-
 
 nextjs page for login --> 
 
 /demo/chat/user/<hash>   GET request. --> public
 
-in the fask 
+in the flask 
 
 user       --->
 
@@ -115,17 +112,23 @@ data : {
 
 }
 
+data :
+{
+    status : OK
+    code : 200
+}
 
 
 inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message  --> internal
+
 
 /chat-server/user/<hash>/message_send  --> read the message and send the message through the backend of GO 
 
 
 logout --> /chat-server/user/logout --> to nextjs server for logout , GET request. --> internal
 
-endchat --> /chat-server/user/endchat    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request. --> internal
 
+endchat --> /chat-server/user/endchat    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request. --> internal
 
 
 
