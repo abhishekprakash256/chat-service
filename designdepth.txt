@@ -19,7 +19,7 @@ user1.   --> user1. in the flask , POST , this should access the GO server for r
 
 user2    --> user2 , in the flask , POST , this should access the GO server for regisgtration to access PGSQL
 
-chat-server/register ---> register , in the flask , 
+chat-server/register ---> register , in the GO used
 
 
 give the user out
@@ -46,3 +46,12 @@ inp --> message    ---> message goes to the go server through the POST request ,
 logout --> /demo/chat/user/logout --> to nextjs server for logout , GET request
 
 endchat --> /demo/chat/user/logout    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request
+
+
+
+
+
+
+Notes -- 
+
+- https://gist.githubusercontent.com/patricksavalle/fac25ed914dc2e10f256fdba1af9e622/raw/cf4dd5dc6dc5bb2f7b3af6a2b64fa0fd77d73d34/ns-reference-api.yaml
