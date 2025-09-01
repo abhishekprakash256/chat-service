@@ -38,6 +38,41 @@ user2    --> user2 , in the flask , POST , this should access the GO server for 
 chat-server/register ---> register , in the GO used. --> internal
 
 
+Json examples 
+
+data send in the backend for seding the data
+
+data : {
+
+userOne : "Abhi"
+userTwo : "Anny"
+hash : "abc123"
+
+}
+
+when succesfull --> 
+
+data :
+{
+    status : OK 
+    code : 200
+}
+
+
+data :
+{
+    status : FAIL
+    code : 400
+}
+
+
+
+
+
+
+
+
+
 give the user out
 
 
