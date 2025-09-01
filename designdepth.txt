@@ -5,21 +5,37 @@ The access to pgsql and redis are handled by flask and go as per need
 
 
 
+Nextjs points are  -- /demo/chat
+
+example -- 
+
+https://meabhi.me/blog/section/project/article/chatapp.     in the nextjs for the chat app 
+
+
+
+GO Endpoint are /chat-server/
+
+https://meabhi.me/chat-server
+
+
+
 services used -->
 
-nextjs for url of the page /demo/chat/register
+nextjs for url of the page /demo/chat/register. --> public
 
-this should call the backend flask server to pass the user_1 , user_2 , submit 
+this should call the backend go server to pass the user_1 , user_2 , submit 
 
-flask server -->
+also should generate a hash can I just use the tinyurl api ? end point
 
 The Flask access the redis to get the hash 
+
+what will be the flask end point ? 
 
 user1.   --> user1. in the flask , POST , this should access the GO server for regisgtration to access PGSQL
 
 user2    --> user2 , in the flask , POST , this should access the GO server for regisgtration to access PGSQL
 
-chat-server/register ---> register , in the GO used
+chat-server/register ---> register , in the GO used. --> internal
 
 
 give the user out
@@ -27,25 +43,25 @@ give the user out
 
 nextjs page for login --> 
 
-/demo/chat/user/<hash>   GET request
+/demo/chat/user/<hash>   GET request. --> public
 
 in the fask 
 
-user       ---> 
+user       --->
 
-login   --->    /chat/user/username/login.   ---> login the user , POST , Go server validates the data and let the user in 
+login   --->    /chat-server/user/username/login.   ---> login the user , POST , Go server validates the data and let the user in  --> internal
 
 
 message  ---> 
 
-inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message 
+inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message  --> internal
 
-/chat/user/<hash>/message  --> read the message and send the message through the backend of GO 
+/chat-server/user/<hash>/message_send  --> read the message and send the message through the backend of GO 
 
 
-logout --> /demo/chat/user/logout --> to nextjs server for logout , GET request
+logout --> /chat-server/user/logout --> to nextjs server for logout , GET request. --> internal
 
-endchat --> /demo/chat/user/logout    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request
+endchat --> /chat-server/user/endchat    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request. --> internal
 
 
 
