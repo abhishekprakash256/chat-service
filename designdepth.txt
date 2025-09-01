@@ -38,7 +38,7 @@ user2    --> user2 , in the flask , POST , this should access the GO server for 
 chat-server/register ---> register , in the GO used. --> internal
 
 
-Json examples 
+Json examples ------------->
 
 data send in the backend for seding the data
 
@@ -103,7 +103,7 @@ data :
 message  ---> 
 
 data : {
-    
+
   "userHash": "abc123",
   "senderName": "Abhi",
   "reciever": "Anny",
