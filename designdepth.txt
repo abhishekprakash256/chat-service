@@ -105,6 +105,16 @@ data :
 
 message  ---> 
 
+data : {
+
+  "userHash": "abc123",
+  "senderName": "Abhi",
+  "reciever": "Anny",
+  "message": "Hello",
+  "timestamp": ISODate()
+
+}
+
 
 
 inp --> message    ---> message goes to the go server through the POST request , redis check if the user is online , save the message in the postgresql and deliver the message  --> internal
