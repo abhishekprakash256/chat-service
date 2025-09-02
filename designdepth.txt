@@ -9,89 +9,99 @@ Nextjs points are  -- /demo/chat
 
 example -- 
 
-https://meabhi.me/blog/section/project/article/chatapp.     in the nextjs for the chat app 
 
+Clear API design (public vs internal)
 
+Suggested endpoints with JSON examples
+
+Flow of how Next.js, Go, Redis, and PostgreSQL work together
+
+https://meabhi.me/blog/section/project/article/chatapp     in the nextjs for the chat app blog page
 
 GO Endpoint are /chat-server/
 
 https://meabhi.me/chat-server
 
 
+ --- Architecture Roles
+
+Next.js → Public frontend (/demo/chat UI).
+
+Go (chat-server) → Core chat logic (registration, login, message delivery, persistence in PostgreSQL , checkredis and also generate the hash).
+
+
+
+--------------------------------------------------- Register page ------------------------------------------
+
+Registration page ---
 
 services used -->
 
-nextjs for url of the page /demo/chat/register. --> public
+nextjs for url of the. POST https://meabhi.me/demo/chatapp/register
 
-this should call the backend go server to pass the user_1 , user_2 , submit 
+this should call the backend go server to pass the userOne , userTwo , submit 
 
-also should generate a hash can I just use the tinyurl api ? end point
+generate the hash and use redis service and generate the hash and pass to front-end 
 
-The Flask access the redis to get the hash 
+Request (from browser → Next.js → → Go):
 
-what will be the flask end point ? 
+{
+  "userOne": "Abhi",
+  "userTwo": "Anny"
+}
 
-user1.   --> user1. in the flask , POST , this should access the GO server for regisgtration to access PGSQL
 
-user2    --> user2 , in the flask , POST , this should access the GO server for regisgtration to access PGSQL
+userOne  --> userOne. in the GO , POST , this should access the GO server for registration to access PGSQL
+
+userTwo  --> userTwo , in the GO , POST , this should access the GO server for registration to access PGSQL
 
 chat-server/register ---> register , in the GO used. --> internal
 
+example -- POST --> https://meabhi.me/demo/chatapp/register from nextjs to go server 
 
-Json examples ------------->
+go server calls the redis and get a hash 
 
-data send in the backend for seding the data
+save the data in PGSQL and gives out
 
-data : {
 
-userOne : "Abhi"
-userTwo : "Anny"
-hash : "abc123"
+Response Json -->
 
-}
-
-when succesfull --> 
-
-data :
 {
-    status : OK 
-    code : 200
-}
-
-
-data :
-{
-    status : FAIL
-    code : 400
+  "status": "OK",
+  "code": 200,
+  "hash": "abc123"
 }
 
 
 
+--------------------------------------------------- login page ------------------------------------------
 
-
-give the user out
 
 nextjs page for login --> 
 
-/demo/chat/user/<hash>   GET request. --> public
+https://meabhi.me/demo/chat/user/<hash>   GET request. --> public
 
-in the flask 
+Flow --> 
 
-user       --->
-
-login   --->    /chat-server/user/username/login.   ---> login the user , POST , Go server validates the data and let the user in  --> internal
+nextjs ---> Go --- > Pgsql --- > autheticate user --> save the cookie in the user 
 
 
-send to the api
+userName    --->
 
 data : {
 
-user : "Abhi"
+userName : "Abhi"
 hash : "abc123"
 
 }
 
+login   --->    /chat-server/user/<username>/login.   ---> login the user , POST , Go server validates the data and let the user in  --> internal
+
+send to the api
+
 request to get the url
+
+Go sends back 
 
 data :
 {
@@ -100,12 +110,28 @@ data :
 }
 
 
+
+For sending the mesasge 
+
+end point POST https://meabhi.me/chat-server/user/<hash>/message_send. , in the Go server 
+
+userHash by the link , other by Redis getting the data by session data 
+
+session:abc123:Abhi → {
+  chat_id: abc123,
+  sender: Abhi,
+  reciver: Anny,
+  last_seen: 2025-07-08T20:00:00,
+  ws_connected: 1,
+  notify: 0
+}
+
 message  ---> 
 
 data : {
 
   "userHash": "abc123",
-  "senderName": "Abhi",
+  "sender": "Abhi",
   "reciever": "Anny",
   "message": "Hello",
   "timestamp": ISODate()
@@ -131,10 +157,20 @@ inp --> message    ---> message goes to the go server through the POST request ,
 
 logout --> /chat-server/user/logout --> to nextjs server for logout , GET request. --> internal
 
+{
+  "status": "OK",
+  "code": 200
+}
+
+clear cookies 
+
 
 endchat --> /chat-server/user/endchat    ---> to go server and nextjs to delelte the data and nextjs refreshers the page and route to register  . GET request. --> internal
 
 
+Deletes session from Redis.
+
+Marks chat closed in PostgreSQL.
 
 
 
