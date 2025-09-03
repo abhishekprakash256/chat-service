@@ -25,11 +25,11 @@ def generate_random_hash(low,high):
 */
 
 
-package main 
+package chat_hash_generation
+
 
 import (
 
-	"fmt"
 	"math/rand"
 	"time"
 
@@ -37,7 +37,7 @@ import (
 
 
 
-func generateRandomHash(min int, max int ) string {
+func GenerateRandomHash(min int, max int ) string {
 	/*
 	The function to generate the random hash 
 	*/
@@ -58,21 +58,8 @@ func generateRandomHash(min int, max int ) string {
 
 		hash += string(choices[choiceInt])
 
-	
-		}
+	}
 
 	return hash
 
 }
-
-
-
-
-func main() {
-
-	res := generateRandomHash(5,10)
-
-	fmt.Println(res)
-}
-
-
