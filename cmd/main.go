@@ -36,9 +36,21 @@ func main() {
 
 	defer client.Close()
 
-	generate_unique_hash.GenerateUniqueHash(config.UniqueHashSet , config.UsedHashSet , 5,10 , 20 , client )
+	hash_manager.GenerateUniqueHash(config.UniqueHashSet , config.UsedHashSet , 5,10 , 20 , client )
+
+	// pop the hash from the primary set and get the hash 
+
+	var i int 
+	
+	i = 0 
+
+	for i < 10 {
+	uniqueHash := hash_manager.PopUniqueHash(config.UniqueHashSet , config.UsedHashSet , client )
 
 
+	fmt.Println(uniqueHash)
 	
+	i++ 
 	
+	}
 }
