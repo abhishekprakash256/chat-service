@@ -19,7 +19,7 @@ var DefaultConfig = DBConfig{
 
 var UsedHashSet = "used_hash_set"
 
-var UniqueHashSet := "frest_hash_set"
+var UniqueHashSet = "frest_hash_set"
 
 //unique_hash_set := "frest_hash_set"
 

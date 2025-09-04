@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
 	"chat-service/redis_config"
+	"chat-service/redis_hash_store"
 
 )
 
@@ -34,5 +35,10 @@ func main() {
 	}
 
 	defer client.Close()
+
+	generate_unique_hash.GenerateUniqueHash(config.UniqueHashSet , config.UsedHashSet , 5,10 , 20 , client )
+
+
+	
 	
 }
