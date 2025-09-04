@@ -25,7 +25,7 @@ def generate_random_hash(low,high):
 */
 
 
-package chat_hash_generation
+package hash_generation
 
 
 import (

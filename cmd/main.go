@@ -7,20 +7,20 @@ package main
 
 import (
 
-	"chat-service/chat_hash_service"
+	"chat-service/hash_service"
 	"log"
 	"fmt"
 	"github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
-	"chat-service/redis_service"
+	"chat-service/redis_config"
 
 )
 
 
 func main() {
 
-	num := chat_hash_generation.GenerateRandomHash(5,10)
+	hash := hash_generation.GenerateRandomHash(5,10)
 
-	fmt.Println(num)
+	fmt.Println(hash)
 
 	//ctx := context.Background()
 
