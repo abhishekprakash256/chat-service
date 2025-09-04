@@ -97,22 +97,30 @@ func GenerateUniqueHash(
 // Returns:
 //   - hash string if successfully popped, empty string otherwise.
 func PopUniqueHash(uniqueHashSet string, usedHashSet string, redisClient *redis.Client) string {
+
 	ctx := context.Background()
 
 	// Step 1: Pop a random element from the set
 	hash, err := redisClient.SPop(ctx, uniqueHashSet).Result()
 	if err == redis.Nil {
+
 		log.Printf("No hashes left in set %s", uniqueHashSet)
 		return ""
+
 	} else if err != nil {
+
 		log.Printf("Error popping hash from set: %v", err)
+
 		return ""
 	}
 
 	// Step 2: Optionally move the hash to usedHashSet
 	if usedHashSet != "" {
+
 		_, err := redisClient.SAdd(ctx, usedHashSet, hash).Result()
+		
 		if err != nil {
+
 			log.Printf("Error adding hash to used set: %v", err)
 		}
 	}
