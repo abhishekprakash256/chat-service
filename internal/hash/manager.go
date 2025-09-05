@@ -3,11 +3,11 @@ The function to make the store the hash into the redis hash set
 
 */
 
-package redis_hash_service
+package hash_manager
 
 import (
 
-	"chat-service/hash_service"
+	"chat-service/hash"
 	"log"
 	"github.com/redis/go-redis/v9"
 	"context"
