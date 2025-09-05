@@ -7,7 +7,6 @@ package hash
 
 import (
 
-	"chat-service/internal/hash"
 	"log"
 	"github.com/redis/go-redis/v9"
 	"context"
