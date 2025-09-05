@@ -1,27 +1,23 @@
 /*
-the main to test the function. 
+the main to test the function.
 */
 
-
-package main 
+package main
 
 import (
-
-	"chat-service/internal/hash"
-	"log"
-	"fmt"
-	"github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
 	"chat-service/internal/config"
-	
+	"chat-service/internal/hash"
+	"fmt"
+	"log"
 
+	"github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
 )
-
 
 func main() {
 
-	hash := hash.GenerateRandomHash(5,10)
+	genrated_hash := hash.GenerateRandomHash(5, 10)
 
-	fmt.Println(hash)
+	fmt.Println(genrated_hash)
 
 	//ctx := context.Background()
 
@@ -36,22 +32,21 @@ func main() {
 
 	defer client.Close()
 
-	hash.GenerateUniqueHash(config.UniqueHashSet , config.UsedHashSet , 5,10 , 20 , client )
+	hash.GenerateUniqueHash(config.UniqueHashSet, config.UsedHashSet, 5, 10, 20, client)
 
-	// pop the hash from the primary set and get the hash 
+	// pop the hash from the primary set and get the hash
 
-	var i int 
-	
-	i = 0 
+	var i int
+
+	i = 0
 
 	for i < 10 {
-		
-	uniqueHash := hash.PopUniqueHash(config.UniqueHashSet , config.UsedHashSet , client )
 
+		uniqueHash := hash.PopUniqueHash(config.UniqueHashSet, config.UsedHashSet, client)
 
-	fmt.Println(uniqueHash)
-	
-	i++ 
+		fmt.Println(uniqueHash)
+
+		i++
 
 	}
 }
