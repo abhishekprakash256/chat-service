@@ -1,23 +1,40 @@
 --> 
-
-make the folder name as <usercase>_service 
-file will be name <usercase>_<use>
-
-package name -> <usercase>_<use>_service
-
-split of the code 
-
---> 
-
-Folder structure -- >
-
-
-chat_service 
-    --> message_saving_service
-    --> client_status_service
-    --> message_router_service
-hash_service 
-redis_service
-pgsql_service
-redis_config
-pgsql_config
+chat-app/
+│── cmd/
+│   └── chatserver/
+│       └── main.go                     # Starts the chat server
+│
+│── internal/
+│   ├── chat/
+│   │   ├── router/                     # message_router_service
+│   │   │   └── router.go
+│   │   ├── saver/                      # message_saving_service
+│   │   │   └── saver.go
+│   │   └── status/                     # client_status_service
+│   │       └── status.go
+│   │
+│   ├── hash/                           # hash_service
+│   │   ├── generator.go
+│   │   └── manager.go
+│   │
+│   ├── storage/
+│   │   ├── pgsql/                      # pgsql_service
+│   │   │   ├── connection.go
+│   │   │   └── queries.go
+│   │   └── redis/                      # redis_service
+│   │       ├── connection.go
+│   │       └── sets.go
+│   │
+│   └── config/
+│       ├── pgsql.go                    # pgsql_config
+│       ├── redis.go                    # redis_config
+│       └── app.go
+│
+│── pkg/
+│   ├── logger/                         # optional: reusable logger
+│   │   └── logger.go
+│   └── utils/                          # helpers (random, strings, etc.)
+│       └── random.go
+│
+├── go.mod
+└── README.md
