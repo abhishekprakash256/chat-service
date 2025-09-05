@@ -1,26 +1,20 @@
 /*
 
-The service for the registartion of the user 
+The service for the registartion of the user
 register the user in the redis
 
 */
 
-
 package hash
 
-
 import (
-
 	"math/rand"
 	"time"
-
 )
 
-
-
-func GenerateRandomHash(min int, max int ) string {
+func GenerateRandomHash(min int, max int) string {
 	/*
-	The function to generate the random hash 
+		The function to generate the random hash
 	*/
 
 	rand.Seed(time.Now().UnixNano())
@@ -32,9 +26,9 @@ func GenerateRandomHash(min int, max int ) string {
 
 	choices := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-	// 
+	//
 	for i := 0; i <= randomNumber; i++ {
-        
+
 		choiceInt := rand.Intn(len(choices))
 
 		hash += string(choices[choiceInt])
