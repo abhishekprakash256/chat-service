@@ -22,7 +22,7 @@ func main() {
 	//ctx := context.Background()
 
 	// Making the connection
-	client, err := connection.ConnectRedis(config.DefaultConfig.Host, config.DefaultConfig.Port)
+	client, err := connection.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
 
 	if err != nil {
 

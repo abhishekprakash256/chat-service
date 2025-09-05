@@ -1,3 +1,5 @@
+github.com/abhishekprakash256/go-pgsql-helper-kit v0.1.0 h1:7aY4OHNmHQDiV+YhEZTxKmZIqnkXfU/L6j4o0Xj1vOU=
+github.com/abhishekprakash256/go-pgsql-helper-kit v0.1.0/go.mod h1:v8OWJ9UZsTzF7YI95omszPxx7BKOrv3oCERYAPiIWZQ=
 github.com/abhishekprakash256/go-redis-helper-kit v0.0.0-20250831035410-f9291ede59d9 h1:gqDNXrJZ95Cyu31rs/n9OD4IxFGsJroKJdxmpgv1iBU=
 github.com/abhishekprakash256/go-redis-helper-kit v0.0.0-20250831035410-f9291ede59d9/go.mod h1:xFYtQx9EAY0l+C4NUMq1AmVU9zADA4mQrFgUDKHfhf8=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

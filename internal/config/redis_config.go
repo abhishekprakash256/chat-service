@@ -5,16 +5,14 @@ The redis config for the  connection
 
 package config
 
-
-type DBConfig struct {
-	Host     string
-	Port     int
+type RedisDBConfig struct {
+	Host string
+	Port int
 }
 
-
-var DefaultConfig = DBConfig{
+var RedisDefaultConfig = RedisDBConfig{
 	Host: "localhost",
-	Port:  6379,
+	Port: 6379,
 }
 
 var UsedHashSet = "used_hash_set"
@@ -22,5 +20,3 @@ var UsedHashSet = "used_hash_set"
 var UniqueHashSet = "frest_hash_set"
 
 //unique_hash_set := "frest_hash_set"
-
-
