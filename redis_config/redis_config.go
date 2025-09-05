@@ -3,7 +3,7 @@
 The redis config for the  connection
 */
 
-package config
+package redis_config
 
 
 type DBConfig struct {

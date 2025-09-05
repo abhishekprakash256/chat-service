@@ -3,7 +3,7 @@ The function to make the store the hash into the redis hash set
 
 */
 
-package generate_unique_hash
+package redis_hash_service
 
 import (
 
@@ -57,7 +57,7 @@ func GenerateUniqueHash(
 		}
 
 		// Step 1: Generate a random hash
-		hash := hash_generation.GenerateRandomHash(minHashSize, maxHashSize)
+		hash := hash_generation_service.GenerateRandomHash(minHashSize, maxHashSize)
 
 		// Step 2: Check if it already exists
 		exists, err := client.SIsMember(ctx, uniqueHashSet, hash).Result()
@@ -114,17 +114,18 @@ func PopUniqueHash(uniqueHashSet string, usedHashSet string, redisClient *redis.
 		return ""
 	}
 
-	// Step 2: Optionally move the hash to usedHashSet
-	if usedHashSet != "" {
+	// Step 2: Move the hash to usedHashSet
 
-		_, err := redisClient.SAdd(ctx, usedHashSet, hash).Result()
-		
-		if err != nil {
+	_, err = redisClient.SAdd(ctx, usedHashSet, hash).Result()
 
-			log.Printf("Error adding hash to used set: %v", err)
-		}
+	if err != nil {
+
+		log.Printf("Error adding hash to used set: %v", err)
 	}
+
 
 	log.Printf("Popped hash: %s", hash)
 	return hash
+
+	
 }

@@ -1,0 +1,23 @@
+--> 
+
+make the folder name as <usercase>_service 
+file will be name <usercase>_<use>
+
+package name -> <usercase>_<use>_service
+
+split of the code 
+
+--> 
+
+Folder structure -- >
+
+
+chat_service 
+    --> message_saving_service
+    --> client_status_service
+    --> message_router_service
+hash_service 
+redis_service
+pgsql_service
+redis_config
+pgsql_config

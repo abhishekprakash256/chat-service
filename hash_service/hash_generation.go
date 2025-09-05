@@ -25,7 +25,7 @@ def generate_random_hash(low,high):
 */
 
 
-package hash_generation
+package hash_generation_service
 
 
 import (
