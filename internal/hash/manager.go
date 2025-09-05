@@ -56,7 +56,7 @@ func GenerateUniqueHash(
 		}
 
 		// Step 1: Generate a random hash
-		hash := hash.GenerateRandomHash(minHashSize, maxHashSize)
+		hash := GenerateRandomHash(minHashSize, maxHashSize)
 
 		// Step 2: Check if it already exists
 		exists, err := client.SIsMember(ctx, uniqueHashSet, hash).Result()
