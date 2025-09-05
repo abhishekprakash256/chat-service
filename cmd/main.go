@@ -10,7 +10,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
+	redisconn "github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
+	//pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 	//ctx := context.Background()
 
 	// Making the connection
-	client, err := connection.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
+	client, err := redisconn.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
 
 	if err != nil {
 
@@ -36,9 +37,7 @@ func main() {
 
 	// pop the hash from the primary set and get the hash
 
-	var i int
-
-	i = 0
+	i := 0
 
 	for i < 10 {
 
