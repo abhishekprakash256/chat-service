@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"log"
 
+	pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
 	redisconn "github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
-	//pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
 )
 
 func main() {
@@ -23,11 +23,11 @@ func main() {
 	//ctx := context.Background()
 
 	// Making the connection
-	client, err := redisconn.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
+	client, errRedis := redisconn.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
 
-	if err != nil {
+	if errRedis != nil {
 
-		log.Fatalf("Failed to connect to Redis: %v", err)
+		log.Fatalf("Failed to connect to Redis: %v", errRedis)
 
 	}
 
@@ -48,4 +48,22 @@ func main() {
 		i++
 
 	}
+
+	// Create the connection pool
+	pool, err := pgsqlconn.ConnectPgSql(
+		config.PgsqlDefaultConfig.Host,
+		config.PgsqlDefaultConfig.User,
+		config.PgsqlDefaultConfig.Password,
+		config.PgsqlDefaultConfig.DBName,
+		config.PgsqlDefaultConfig.Port,
+	)
+
+	defer pool.Close() // Ensures pool is closed when program exits
+
+	// Create the database schema
+	// The connection failed
+	if err != nil {
+		log.Fatal("DB connection failed:", err)
+	}
+
 }
