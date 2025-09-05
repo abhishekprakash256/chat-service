@@ -3,11 +3,11 @@ The function to make the store the hash into the redis hash set
 
 */
 
-package hash_manager
+package hash
 
 import (
 
-	"chat-service/hash"
+	"chat-service/internal/hash"
 	"log"
 	"github.com/redis/go-redis/v9"
 	"context"
@@ -57,7 +57,7 @@ func GenerateUniqueHash(
 		}
 
 		// Step 1: Generate a random hash
-		hash := hash_generation_service.GenerateRandomHash(minHashSize, maxHashSize)
+		hash := hash.GenerateRandomHash(minHashSize, maxHashSize)
 
 		// Step 2: Check if it already exists
 		exists, err := client.SIsMember(ctx, uniqueHashSet, hash).Result()

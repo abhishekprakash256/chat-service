@@ -6,7 +6,7 @@ register the user in the redis
 */
 
 
-package hash_generation
+package hash
 
 
 import (
