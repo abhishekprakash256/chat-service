@@ -18,8 +18,6 @@ import (
 
 	pgsqlconn "chat-service/internal/storage/pgsql/connection"
 
-	//pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
-
 	redisconn "chat-service/internal/storage/redis/connection"
 )
 
