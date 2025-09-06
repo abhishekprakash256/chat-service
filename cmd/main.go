@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"net/http"
 
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
@@ -19,7 +20,17 @@ import (
 	pgsqlconn "chat-service/internal/storage/pgsql/connection"
 
 	redisconn "chat-service/internal/storage/redis/connection"
+
+	httphandler "chat-service/api/http"
 )
+
+
+
+/*
+func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Registration handler hit!")
+}
+*/
 
 func main() {
 
@@ -137,4 +148,11 @@ func main() {
 	log.Println("Data operation done successfully")
 
 	defer pool.Close() // Ensures pool is closed when program exits
+
+
+
+
+	http.HandleFunc("/chat-server/registration", httphandler.RegistrationHandler)
+	fmt.Println("Server started on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
