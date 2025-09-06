@@ -5,6 +5,11 @@ The redis config for the  connection
 
 package config
 
+import (
+
+	"time"
+)
+
 type RedisDBConfig struct {
 	Host string
 	Port int
@@ -13,6 +18,15 @@ type RedisDBConfig struct {
 var RedisDefaultConfig = RedisDBConfig{
 	Host: "localhost",
 	Port: 6379,
+}
+
+type RedisSessionData struct {
+	ChatID      string
+	Sender       string
+	Reciever	string
+	LastSeen    time.Time
+	WSConnected int
+	Notify      int
 }
 
 var UsedHashSet = "used_hash_set"

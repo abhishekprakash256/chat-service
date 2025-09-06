@@ -1,5 +1,10 @@
 package config
 
+import (
+	"time"
+)
+
+
 type PgsqlDBConfig struct {
 	Host     string
 	User     string
@@ -15,6 +20,27 @@ var PgsqlDefaultConfig = PgsqlDBConfig{
 	DBName:   "test_db",
 	Port:     5432,
 }
+
+
+
+
+type LoginData struct {
+	ChatID string
+	UserOne string
+	UserTwo string
+}
+
+
+type MessageData struct {
+	MessageID    int
+	ChatID       string
+	SenderName   string
+	ReceiverName string
+	Message      string
+	Timestamp    time.Time
+	Read         bool
+}
+
 
 // SQL to create the login table
 var LoginTableSQL = `

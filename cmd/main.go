@@ -12,10 +12,15 @@ import (
 	"log"
 	"time"
 
-	"github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/crud"
+	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
-	pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
-	redisconn "github.com/abhishekprakash256/go-redis-helper-kit/redis/db/connection"
+	pgsqldb "chat-service/internal/storage/pgsql/db"
+
+	pgsqlconn "chat-service/internal/storage/pgsql/connection"
+
+	//pgsqlconn "github.com/abhishekprakash256/go-pgsql-helper-kit/pgsql/db/connection"
+
+	redisconn "chat-service/internal/storage/redis/connection"
 )
 
 func main() {
@@ -69,25 +74,25 @@ func main() {
 	}
 
 	// Create the database schema
-	if err := crud.CreateSchema(ctx, pool, config.LoginTableSQL, config.MessageTableSQL); err != nil {
+	if err := pgsqldb.CreateSchema(ctx, pool, config.LoginTableSQL, config.MessageTableSQL); err != nil {
 
 		log.Fatal("Schema creation failed:", err)
 	}
 
 	// Test login data
-	login := crud.LoginData{
+	login := config.LoginData{
 		ChatID:  "abc123",
 		UserOne: "Abhi",
 		UserTwo: "Anny",
 	}
 
 	// login the data
-	if !crud.InsertLoginData(ctx, "login", pool, login) {
+	if !pgsqlcrud.InsertLoginData(ctx, "login", pool, login) {
 		log.Println("Insert into login failed")
 	}
 
 	// Test message data
-	msg := crud.MessageData{
+	msg := config.MessageData{
 		ChatID:       "abc123",
 		SenderName:   "Abhi",
 		ReceiverName: "Anny",
@@ -97,12 +102,12 @@ func main() {
 	}
 
 	// Insert the message data
-	if !crud.InsertMessageData(ctx, "message", pool, msg) {
+	if !pgsqlcrud.InsertMessageData(ctx, "message", pool, msg) {
 		log.Println("Insert into message failed")
 	}
 
 	// Step 5: Retrieve login data
-	retrievedLogin, err := crud.GetLoginData(ctx, "login", pool, "abc123")
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, "abc123")
 	if err != nil {
 		log.Println("Login not found:", err)
 	} else {
@@ -110,7 +115,7 @@ func main() {
 	}
 
 	// Step 6: Retrieve message data
-	messages := crud.GetMessageData(ctx, "message", pool, "abc123", "Abhi")
+	messages := pgsqlcrud.GetMessageData(ctx, "message", pool, "abc123", "Abhi")
 
 	// print the message data
 	fmt.Printf("Messages: %+v\n", messages)
@@ -121,12 +126,12 @@ func main() {
 	}
 
 	// Test delete message data
-	if !crud.DeleteMessageData(ctx, "message", pool, "abc123") {
+	if !pgsqlcrud.DeleteMessageData(ctx, "message", pool, "abc123") {
 		log.Println("Delete message failed")
 	}
 
 	// Test delete login data
-	if !crud.DeleteLoginData(ctx, "login", pool, "abc123") {
+	if !pgsqlcrud.DeleteLoginData(ctx, "login", pool, "abc123") {
 		log.Println("Delete login data failed")
 	}
 
