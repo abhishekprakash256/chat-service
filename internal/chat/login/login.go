@@ -24,6 +24,9 @@ and start hearbeat protocol until logout or endchat
 */
 
 /*
+
+
+
 func LoginUser 
 
 params --> hash , user 
@@ -37,7 +40,98 @@ and start the hearbeat protocol to check the session
 and keep updating the status
 pass a success message if user is valid to front-end 
 
+get the json 
+
+{
+
+UserName : "Abhi"
+hash : "abc123"
+
+}
+
+returns 
+
+{
+    status : OK
+    code : 200
+}
+
+
+type ErrorResponse struct {
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+
 */
+
+package login 
+
+
+import (
+
+	"net/http"
+	"encoding/json"
+	"fmt"
+
+)
+
+type LoginRequest struct {
+    Hash     string `json:"hash"`
+    UserName string `json:"username"`
+}
+
+
+type LoginSuccess struct {
+	
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+
+}
+
+
+type ErrorResponse struct {
+	
+	Status  string `json:"status"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+
+}
+
+
+func writeError(w http.ResponseWriter, code int, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(ErrorResponse{
+		Status:  "error",
+		Code:    code,
+		Message: msg,
+	})
+}
+
+
+
+func LoginUser( w http.ResponseWriter, r *http.Request ) {
+
+	if r.Method != http.MethodPost {
+        writeError(w, http.StatusMethodNotAllowed, "Only POST allowed")
+        return
+    }
+
+	// Decode request
+	var data LoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid JSON")
+		return
+	}
+
+	// for testing purpose
+	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
+
+	
+
+}
 
 
 

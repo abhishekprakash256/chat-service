@@ -42,21 +42,24 @@ import (
 	"net/http"
 
 	"chat-service/internal/chat/register"
+	"chat-service/internal/chat/login"
 )
 
 
 
 
-
 func RegistrationHandler() {
-	http.HandleFunc("/chat-server/register/submit", register.UserRegistration)
-	
-	
-	// add more routes here:
-	// http.HandleFunc("/chat-server/login", login.UserLogin)
 
-	// http.HandleFunc("/chat-server/message", message.Handler)
+	http.HandleFunc("/chat-server/register", register.UserRegistration)
+
+}
+
+
+func LoginHander() {
+
+	http.HandleFunc("/chat-server/login", login.LoginUser)
 	
 }
+
 
 

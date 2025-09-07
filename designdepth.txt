@@ -91,7 +91,7 @@ nextjs ---> Go --- > Pgsql --- > autheticate user --> save the cookie in the use
 
 userName    --->
 
-data : {
+{
 
 userName : "Abhi"
 hash : "abc123"
@@ -106,7 +106,7 @@ request to get the url
 
 Go sends back 
 
-data :
+
 {
     status : OK
     code : 200
