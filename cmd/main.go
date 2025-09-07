@@ -13,6 +13,8 @@ import (
 	"time"
 	"net/http"
 
+	"chat-service/api/db_connector"
+
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
 	pgsqldb "chat-service/internal/storage/pgsql/db"
@@ -33,6 +35,8 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 */
 
 func main() {
+
+	db_connector.DbConnector()
 
 	genrated_hash := hash.GenerateRandomHash(5, 10)
 
