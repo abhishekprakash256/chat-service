@@ -2,17 +2,17 @@ package config
 
 
 import (
-	pgsqlconn "chat-service/internal/storage/pgsql/connection"
+	pgsqlconn "github.com/jackc/pgx/v5/pgxpool"
 
-	redisconn "chat-service/internal/storage/redis/connection"
+	redisconn "github.com/redis/go-redis/v9"
 )
 
 
 type DbConn struct {
 
-	PgsqlConn *pgsqlconn.ConnectRedis
+	PgsqlConn *pgsqlconn.Pool
 
-	RedisConn *redisconn.ConnectPgSql
+	RedisConn *redisconn.Client
 }
 
 var GlobalDbConn *DbConn

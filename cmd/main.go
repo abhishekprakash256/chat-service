@@ -19,10 +19,6 @@ import (
 
 	pgsqldb "chat-service/internal/storage/pgsql/db"
 
-	pgsqlconn "chat-service/internal/storage/pgsql/connection"
-
-	redisconn "chat-service/internal/storage/redis/connection"
-
 	httphandler "chat-service/api/http"
 )
 
@@ -44,16 +40,13 @@ func main() {
 
 	ctx := context.Background()
 
-	// Making the connection
-	client, errRedis := redisconn.ConnectRedis(config.RedisDefaultConfig.Host, config.RedisDefaultConfig.Port)
+	pool := config.GlobalDbConn.PgsqlConn
+	
+	client := config.GlobalDbConn.RedisConn
 
-	if errRedis != nil {
 
-		log.Fatalf("Failed to connect to Redis: %v", errRedis)
+	
 
-	}
-
-	defer client.Close()
 
 	hash.GenerateUniqueHash(config.UniqueHashSet, config.UsedHashSet, 5, 10, 20, client)
 
@@ -71,20 +64,6 @@ func main() {
 
 	}
 
-	// Create the connection pool
-	pool, err := pgsqlconn.ConnectPgSql(
-		config.PgsqlDefaultConfig.Host,
-		config.PgsqlDefaultConfig.User,
-		config.PgsqlDefaultConfig.Password,
-		config.PgsqlDefaultConfig.DBName,
-		config.PgsqlDefaultConfig.Port,
-	)
-
-	// Create the database schema
-	// The connection failed
-	if err != nil {
-		log.Fatal("DB connection failed:", err)
-	}
 
 	// Create the database schema
 	if err := pgsqldb.CreateSchema(ctx, pool, config.LoginTableSQL, config.MessageTableSQL); err != nil {
@@ -152,7 +131,6 @@ func main() {
 	log.Println("Data operation done successfully")
 
 	defer pool.Close() // Ensures pool is closed when program exits
-
 
 
 

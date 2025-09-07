@@ -43,9 +43,9 @@ func DbConnector() {
 
 	}
 
-	dbConn := &config.GlobalDbConn{
+	config.GlobalDbConn = &config.DbConn{
 		PgsqlConn : pool , 
-		RedisConn : client 
+		RedisConn : client ,
 	}
 
 	log.Println("DB and Redis initialized successfully")
