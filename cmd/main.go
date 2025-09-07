@@ -32,6 +32,7 @@ func RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
+	// run the code to make the connetion
 	db_connector.DbConnector()
 
 	genrated_hash := hash.GenerateRandomHash(5, 10)
@@ -40,12 +41,10 @@ func main() {
 
 	ctx := context.Background()
 
+	// import the connector from db
 	pool := config.GlobalDbConn.PgsqlConn
 	
 	client := config.GlobalDbConn.RedisConn
-
-
-	
 
 
 	hash.GenerateUniqueHash(config.UniqueHashSet, config.UsedHashSet, 5, 10, 20, client)

@@ -48,7 +48,7 @@ func DbConnector() {
 		RedisConn : client ,
 	}
 
-	log.Println("DB and Redis initialized successfully")
+	log.Println("DB and Redis connection initialized successfully")
 
 
 }
