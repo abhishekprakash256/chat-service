@@ -54,8 +54,9 @@ func RegistrationHandler() {
 	
 	// add more routes here:
 	// http.HandleFunc("/chat-server/login", login.UserLogin)
-	
+
 	// http.HandleFunc("/chat-server/message", message.Handler)
+	
 }
 
 
