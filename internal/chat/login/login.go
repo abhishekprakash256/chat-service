@@ -2,6 +2,27 @@
 Mkae the login and start the session 
 
 
+test data 
+
+
+for registration -- 
+
+{
+    "userOne": "Sam",
+     "userTwo": "Bob"
+}
+
+{
+    "status": "success",
+    "code": 200,
+    "data": {
+        "hash": "enyVF5JkoV0",
+        "userOne": "Sam",
+        "userTwo": "Bob"
+    }
+}
+
+
 The key and the field -- 
 
 | Redis Key             | Data Structure | Fields (example)                                                         |
@@ -94,6 +115,7 @@ type LoginSuccess struct {
 	
 	Status  string `json:"status"`
 	Code    int    `json:"code"`
+	
 
 }
 
@@ -143,8 +165,8 @@ func LoginUser( w http.ResponseWriter, r *http.Request ) {
 	// for testing purpose
 	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
 
-	//verfiy the login 
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, "abc123")
+	//get the login 
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool,  data.Hash )
 
 	// get the login details
 	if err != nil {
@@ -153,6 +175,29 @@ func LoginUser( w http.ResponseWriter, r *http.Request ) {
 		} else {
 		fmt.Printf("Login for chat %s: %s & %s\n", retrievedLogin.ChatID, retrievedLogin.UserOne, retrievedLogin.UserTwo)
 	}
+
+	//match the login data 
+	if data.UserName == retrievedLogin.UserOne  || data.UserName == retrievedLogin.UserTwo {
+
+		log.Printf("Login succefull for %s" , data.UserName)
+
+	} else {
+		
+		log.Printf("failed login for %s" , data.UserName)
+
+		// return the fail login data 
+
+
+	}
+
+	//make the json 
+
+
+
+	// start the session 
+
+
+	// return the succesfll json
 
 
 }
