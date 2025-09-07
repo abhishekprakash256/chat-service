@@ -92,6 +92,7 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 // Route:
 //   POST /chat-server/registration
 func UserRegistration(w http.ResponseWriter, r *http.Request) {
+	
 	pool := config.GlobalDbConn.PgsqlConn
 	client := config.GlobalDbConn.RedisConn
 	ctx := context.Background()
