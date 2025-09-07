@@ -74,6 +74,13 @@ import (
 	"net/http"
 	"encoding/json"
 	"fmt"
+	"context"
+	"log"
+
+
+	"chat-service/internal/config"
+
+	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
 )
 
@@ -114,6 +121,13 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 
 func LoginUser( w http.ResponseWriter, r *http.Request ) {
 
+	ctx := context.Background()
+
+	// make the redis and pgsql connection
+	pool := config.GlobalDbConn.PgsqlConn
+
+	//client := config.GlobalDbConn.RedisConn. not used rn 
+
 	if r.Method != http.MethodPost {
         writeError(w, http.StatusMethodNotAllowed, "Only POST allowed")
         return
@@ -129,7 +143,17 @@ func LoginUser( w http.ResponseWriter, r *http.Request ) {
 	// for testing purpose
 	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
 
+	//verfiy the login 
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, "abc123")
+
+	// get the login details
+	if err != nil {
+		log.Println("Login not found:", err)
 	
+		} else {
+		fmt.Printf("Login for chat %s: %s & %s\n", retrievedLogin.ChatID, retrievedLogin.UserOne, retrievedLogin.UserTwo)
+	}
+
 
 }
 
