@@ -103,51 +103,44 @@ type ErrorResponse struct {
 
 */
 
-package login 
+
+package login
+
 
 
 import (
-
-	"net/http"
+	"context"
 	"encoding/json"
 	"fmt"
-	"context"
 	"log"
-
-
-	"chat-service/internal/config"
+	"net/http"
 
 	"chat-service/internal/chat/session"
-
+	"chat-service/internal/config"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
-
 )
 
+// LoginRequest represents the expected JSON body for login requests.
 type LoginRequest struct {
-    Hash     string `json:"hash"`
-    UserName string `json:"username"`
+	Hash     string `json:"hash"`     // Chat session hash
+	UserName string `json:"username"` // Username trying to log in
 }
 
-
+// LoginSuccess represents a successful login response.
 type LoginSuccess struct {
-	
-	Status  string `json:"status"`
-	Code    int    `json:"code"`
-	Data   interface{} `json:"data"`
-	
-
+	Status string      `json:"status"` // Always "success"
+	Code   int         `json:"code"`   // HTTP status code
+	Data   interface{} `json:"data"`   // Additional data payload
 }
 
-
+// ErrorResponse represents a standardized error response.
 type ErrorResponse struct {
-	
-	Status  string `json:"status"`
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-
+	Status  string `json:"status"`  // Always "error"
+	Code    int    `json:"code"`    // HTTP status code
+	Message string `json:"message"` // Human-readable error message
 }
 
-
+// writeError writes a standardized JSON error response.
 func writeError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
@@ -160,79 +153,90 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 
 
 
-func LoginUser( w http.ResponseWriter, r *http.Request ) {
 
+// LoginUser handles chat login requests.
+//
+// Expected request (POST /chat-server/login):
+//   {
+//     "hash": "abc123",
+//     "username": "Sam"
+//   }
+//
+// Steps performed:
+//   1. Validates that the request method is POST.
+//   2. Parses the JSON request body into LoginRequest.
+//   3. Looks up login data by hash in PostgreSQL.
+//   4. Checks if the username matches one of the registered users.
+//   5. Starts a session in Redis (via session.StartSession).
+//   6. Returns a standardized JSON response.
+//
+// Success Response Example:
+//   {
+//     "status": "success",
+//     "code": 200,
+//     "data": {
+//       "hash": "abc123",
+//       "username": "Sam"
+//     }
+//   }
+//
+// Error Response Example:
+//   {
+//     "status": "error",
+//     "code": 401,
+//     "message": "Login Failed Wrong Username or Hash"
+//   }
+func LoginUser(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-
-	// make the redis and pgsql connection
 	pool := config.GlobalDbConn.PgsqlConn
 
-	//client := config.GlobalDbConn.RedisConn. not used rn 
-
 	if r.Method != http.MethodPost {
-        writeError(w, http.StatusMethodNotAllowed, "Only POST allowed")
-        return
-    }
+		writeError(w, http.StatusMethodNotAllowed, "Only POST allowed")
+		return
+	}
 
-	// Decode request
+	// Decode request JSON
 	var data LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 		writeError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
-	// for testing purpose
+	// Debug log
 	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
 
-	//get the login 
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool,  data.Hash )
-
-	// get the login details
+	// Retrieve login record from DB
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.Hash)
 	if err != nil {
-		log.Println("Login not found:", err)
-	
-		} else {
-		fmt.Printf("Login for chat %s: %s & %s\n", retrievedLogin.ChatID, retrievedLogin.UserOne, retrievedLogin.UserTwo)
+		writeError(w, http.StatusUnauthorized, "Login Failed: Hash not found")
+		log.Printf("Login failed: hash %s not found (%v)", data.Hash, err)
+		return
 	}
 
-	//match the login data 
-	if data.UserName == retrievedLogin.UserOne  || data.UserName == retrievedLogin.UserTwo {
-
-		log.Printf("Login succefull for %s" , data.UserName)
-
-	}  else {
-		
-		log.Printf("failed login for %s" , data.UserName)
-
-		writeError(w, http.StatusInternalServerError, "Login Failed Wrong Username or Hash")
-
-		return 
-		// return the fail login data 	
-
-
+	// Check if username matches registered users
+	if data.UserName != retrievedLogin.UserOne && data.UserName != retrievedLogin.UserTwo {
+		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or Hash")
+		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.Hash)
+		return
 	}
 
-	//make the json Success Response
+	// Successful login
+	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
+
+	// TODO: Pass proper args into session.StartSession (e.g., hash + username)
+	session.StartSession()
+
+	// Success response
 	resp := LoginSuccess{
 		Status: "success",
 		Code:   http.StatusOK,
 		Data: map[string]string{
-			
-			"hash":    data.Hash,
-			"userOne": data.UserName,
+			"hash":     data.Hash,
+			"userName": data.UserName,
 		},
 	}
 
-	// start the session in Redis, it will take username and hash 
-	session.StartSession()
-
-
-	// return the succesfll json
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
-
 }
-
-
-
