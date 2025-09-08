@@ -5,7 +5,7 @@ Mkae the login and start the session
 test data 
 
 
-for registration -- 
+for registration  Testing-- 
 
 {
     "userOne": "Sam",
@@ -22,6 +22,18 @@ for registration --
     }
 }
 
+{
+    "status": "success",
+    "code": 200,
+    "data": {
+        "hash": "XWVU7wbbr",
+        "userOne": "Bob",
+        "userTwo": "Ben"
+    }
+}
+
+
+////////-----------------------------------////////
 
 The key and the field -- 
 
@@ -73,8 +85,12 @@ hash : "abc123"
 returns 
 
 {
-    status : OK
-    code : 200
+    "status": "success",
+    "code": 200,
+    "data": {
+        "hash": "enyVF5JkoV0",
+        "userName": "Sam",
+    }
 }
 
 
@@ -101,6 +117,8 @@ import (
 
 	"chat-service/internal/config"
 
+	"chat-service/internal/chat/session"
+
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
 )
@@ -115,6 +133,7 @@ type LoginSuccess struct {
 	
 	Status  string `json:"status"`
 	Code    int    `json:"code"`
+	Data   interface{} `json:"data"`
 	
 
 }
@@ -181,24 +200,37 @@ func LoginUser( w http.ResponseWriter, r *http.Request ) {
 
 		log.Printf("Login succefull for %s" , data.UserName)
 
-	} else {
+	}  else {
 		
 		log.Printf("failed login for %s" , data.UserName)
 
-		// return the fail login data 
+		writeError(w, http.StatusInternalServerError, "Login Failed Wrong Username or Hash")
+
+		return 
+		// return the fail login data 	
 
 
 	}
 
-	//make the json 
+	//make the json Success Response
+	resp := LoginSuccess{
+		Status: "success",
+		Code:   http.StatusOK,
+		Data: map[string]string{
+			
+			"hash":    data.Hash,
+			"userOne": data.UserName,
+		},
+	}
 
-
-
-	// start the session 
+	// start the session in Redis, it will take username and hash 
+	session.StartSession()
 
 
 	// return the succesfll json
-
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(resp)
 
 }
 
