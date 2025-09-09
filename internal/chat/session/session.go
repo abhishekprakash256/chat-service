@@ -27,52 +27,56 @@ package session
 import (
 
 	"fmt"
-	"chat-service/api/db_connector"
+	//"chat-service/api/db_connector"
 	"time"
+	"context"
 
 	"chat-service/internal/config"
-	rediscrud "chat-service/internal/redis/crud"
+	rediscrud "chat-service/internal/storage/redis/crud"
 
 )
 
 
-// save the session
-// params --> hash , sender , reciever ,time ,  ws_status , notify value  
-// get the client 
-// make the struct 
-func SaveSession(hash string , sender string , reciever string , last_seen time.Time ,  ws_status int , notification int  ) {
 
+// SaveSession stores session data in Redis.
+//
+// Params:
+//   - hash: Chat session identifier
+//   - sender: User initiating the session
+//   - receiver: Opposite user
+//   - lastSeen: Last active timestamp
+//   - wsStatus: WebSocket connection status (1 = connected, 0 = disconnected)
+//   - notification: Notification flag (1 = on, 0 = off)
+//
+// Returns:
+//   - true if the session was saved successfully, false otherwise
+func SaveSession(hash string, sender string, receiver string, lastSeen time.Time, wsStatus int, notification int) bool {
+	
 	client := config.GlobalDbConn.RedisConn
 
 	ctx := context.Background()
 
 	sessionData := config.RedisSessionData{
-
-		Hash : hash ,
-		Sender : sender , 
-		Reciever : reciever , 
-		LastSeen : last_seen , 
-		WSConnected : ws_status , 
-		Notify : notification , 
-
+		Hash:        hash,
+		Sender:      sender,
+		Reciever:    receiver,
+		LastSeen:    lastSeen,
+		WSConnected: wsStatus,
+		Notify:      notification,
 	}
 
-	var sessionId string 
+	// Session key format: session:<hash>:<sender>
+	sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
-	sessionId = "session":hash:Sender
-
-	val := rediscrud.StoreSessionData(ctx , client , sessionId , sessionData)
-
-	if val != nil {
-		fmt.Println("Session data has been saved")
-
-		return true
-	}
-
-	fmt.Println("Session data not saved")
+	err := rediscrud.StoreSessionData(ctx, client, sessionID, sessionData)
 	
-	return false
+	if err != true {
+		fmt.Println(" Failed to save session data:", err)
+		return false
+	}
 
+	fmt.Println("Session data saved:", sessionID)
+	return true
 }
 
 
@@ -83,7 +87,7 @@ func SaveSession(hash string , sender string , reciever string , last_seen time.
 // params -- > usename , hash 
 // make the redis hash , take  timestamp and save the data 
 
-func StartSession(hash string , sender string , reciever string ) {
+func StartSession(hash string , sender string , receiver string ) {
 
 	fmt.Println("Session started")
 
@@ -91,8 +95,23 @@ func StartSession(hash string , sender string , reciever string ) {
 
 	//ctx := context.Background()
 
-	SaveSession()
-	
+
+	// these are testing values
+	// time for testing 
+	now := time.Now()
+
+	var wsStatus int 
+
+	wsStatus = 1 
+
+	var notify int 
+
+	notify = 1
+
+	SaveSession(hash , sender , receiver , now , wsStatus ,  notify)
+
+	fmt.Println("Session Done")
+
 }
 
 

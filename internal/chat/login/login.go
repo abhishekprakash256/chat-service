@@ -213,8 +213,19 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// make the sender and reciver 
+	var sender string 
+	var receiver string 
+
 	// Check if username matches registered users
-	if data.UserName != retrievedLogin.UserOne && data.UserName != retrievedLogin.UserTwo {
+	if data.UserName == retrievedLogin.UserOne {
+		sender = retrievedLogin.UserOne
+		receiver = retrievedLogin.UserTwo
+	} else if data.UserName == retrievedLogin.UserTwo {
+		sender = retrievedLogin.UserTwo
+		receiver = retrievedLogin.UserOne
+	} else {
+		// username does not match either registered user → fail login
 		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or Hash")
 		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.Hash)
 		return
@@ -224,7 +235,13 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
 
 	// TODO: Pass proper args into session.StartSession (e.g., hash + username)
-	session.StartSession()
+
+	// StartSession(hash string , sender string , reciever string )
+
+	log.Printf("Sender %s and Reciever %s", sender, receiver )
+
+	// start the session 
+	session.StartSession(data.Hash , sender ,  receiver )
 
 	// Success response
 	resp := LoginSuccess{

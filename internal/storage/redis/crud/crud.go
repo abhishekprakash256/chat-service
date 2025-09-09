@@ -23,7 +23,7 @@ import (
 func StoreSessionData(ctx context.Context, rdb *redis.Client, key string, data config.RedisSessionData) bool {
 
 	err:= rdb.HSet(ctx, key, map[string]interface{}{
-		"chat_id":      data.ChatID,
+		"chat_id":      data.Hash,
 		"sender":         data.Sender,
 		"reciever":       data.Reciever , 
 		"last_seen":    data.LastSeen.Format(time.RFC3339),
@@ -64,7 +64,7 @@ func GetSessionData(ctx context.Context, rdb *redis.Client, key string) (config.
 	}
 
 	return config.RedisSessionData{
-		ChatID:      result["chat_id"],
+		Hash:      result["chat_id"],
 		Sender:        result["sender"],
 		Reciever:      result["reciever"],
 		LastSeen:    lastSeen,
