@@ -2,6 +2,9 @@ package config
 
 
 import (
+
+	"github.com/gorilla/websocket"
+
 	pgsqlconn "github.com/jackc/pgx/v5/pgxpool"
 
 	redisconn "github.com/redis/go-redis/v9"
@@ -26,3 +29,6 @@ type RegistrationtData struct {
 
 
 
+// make the global dictonary for session:hash:name  to ws clinet 
+
+var ClientsWsMapper = make(map[string]*websocket.Conn) 

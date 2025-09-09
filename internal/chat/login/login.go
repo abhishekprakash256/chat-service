@@ -117,6 +117,7 @@ import (
 
 	"chat-service/internal/chat/session"
 	"chat-service/internal/config"
+	//wshandler "chat-service/api/ws"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 )
 
