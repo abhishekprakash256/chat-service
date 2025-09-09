@@ -21,7 +21,7 @@ var RedisDefaultConfig = RedisDBConfig{
 }
 
 type RedisSessionData struct {
-	ChatID      string
+	Hash      string
 	Sender       string
 	Reciever	string
 	LastSeen    time.Time
