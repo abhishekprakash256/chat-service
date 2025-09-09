@@ -133,7 +133,7 @@ func main() {
 
 	defer pool.Close() // Ensures pool is closed when program exits
 
-
+	
 	httphandler.RegistrationHandler()
 
 	httphandler.LoginHander()

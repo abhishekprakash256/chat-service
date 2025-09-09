@@ -55,8 +55,10 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+
+	// save the session in global ws mapper
     config.ClientsWsMapper[sessionID] = conn
     log.Printf("Client connected: %s", sessionID)
-	
+
     // here you could start heartbeat loop for this conn
 }
