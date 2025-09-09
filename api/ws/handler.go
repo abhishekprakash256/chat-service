@@ -13,11 +13,12 @@ import (
 
 
 
-func WsHandler(sessionID string) {
+func WsHandler() {
 
 
-    http.HandleFunc("/chat-server/ws", func(w http.ResponseWriter, r *http.Request) {
-        wsendpoint.WSEndpoint(sessionID, w, r)
-    })
+    http.HandleFunc("/chat-server/ws", wsendpoint.WSEndpoint) 
+       
 	
 }
+
+

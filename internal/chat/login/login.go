@@ -114,6 +114,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"chat-service/internal/chat/session"
 	"chat-service/internal/config"
@@ -240,7 +241,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
 
 	// start the session 
-	session.StartSession(data.Hash , sender ,  receiver )
+	//session.StartSession(data.Hash , sender ,  receiver )
+
+	// data to save in the redis sesssion
+	now := time.Now()
+	ws_connected := 1 
+	notify := 0 
+
+	// save the data
+	session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
 
 	// Success response
 	resp := LoginSuccess{

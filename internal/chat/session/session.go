@@ -31,7 +31,7 @@ import (
 	"time"
 	"context"
 
-	wshandler "chat-service/api/ws"
+	//wshandler "chat-service/api/ws"
 
 	"chat-service/internal/config"
 	rediscrud "chat-service/internal/storage/redis/crud"
@@ -114,10 +114,10 @@ func StartSession(hash string , sender string , receiver string ) {
 	SaveSession(hash , sender , receiver , now , wsStatus ,  notify)
 
 	// Session key format: session:<hash>:<sender>
-	sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
+	//sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
 	// start the ws end point
-	wshandler.WsHandler( sessionID )
+	//wshandler.WsHandler( sessionID )
 
 	fmt.Println("Session Done")
 
