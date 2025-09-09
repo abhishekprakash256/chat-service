@@ -77,6 +77,7 @@ func SaveSession(hash string, sender string, receiver string, lastSeen time.Time
 
 	fmt.Println("Session data saved:", sessionID)
 	return true
+
 }
 
 

@@ -234,8 +234,6 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	// Successful login
 	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
 
-	// TODO: Pass proper args into session.StartSession (e.g., hash + username)
-
 	// StartSession(hash string , sender string , reciever string )
 
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
