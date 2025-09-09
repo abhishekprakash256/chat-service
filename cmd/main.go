@@ -20,6 +20,8 @@ import (
 	pgsqldb "chat-service/internal/storage/pgsql/db"
 
 	httphandler "chat-service/api/http"
+
+	wshandler "chat-service/api/ws"
 )
 
 
@@ -132,11 +134,13 @@ func main() {
 	defer pool.Close() // Ensures pool is closed when program exits
 
 
-
 	httphandler.RegistrationHandler()
 
 	httphandler.LoginHander()
-	
+
+	// start the ws handler 
+	wshandler.WsHandler()
+
 	fmt.Println("Server started on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

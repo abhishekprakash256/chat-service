@@ -36,14 +36,17 @@ var upgrader = websocket.Upgrader {
 // WSEndpoint upgrades HTTP connection to WebSocket and saves it in the mapper.
 func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
-
+	// get the data from url 
     hash := r.URL.Query().Get("hash")
     user := r.URL.Query().Get("user")
+
+
     if hash == "" || user == "" {
         http.Error(w, "Missing hash or user", http.StatusBadRequest)
         return
     }
 
+	// make the session id 
     sessionID := fmt.Sprintf("session:%s:%s", hash, user)
 
     conn, err := upgrader.Upgrade(w, r, nil)
@@ -54,6 +57,6 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
     config.ClientsWsMapper[sessionID] = conn
     log.Printf("Client connected: %s", sessionID)
-
+	
     // here you could start heartbeat loop for this conn
 }
