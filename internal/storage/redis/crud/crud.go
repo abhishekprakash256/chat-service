@@ -36,7 +36,7 @@ func StoreSessionData(ctx context.Context, rdb *redis.Client, key string, data c
 		return false
 	}
 
-	fmt.Println("Data Pushed Succesfully ")
+	fmt.Println("Session Data Pushed Succesfully ")
 	return true
 
 }

@@ -17,7 +17,7 @@ import (
 func main() {
 
 	//conn , _ , err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat-server/ws?hash=XWVU7wbbr&user=Bob", nil)
-	conn , _ , err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat-server/ws?hash=XWVU7wbbr&user=Sam", nil)
+	conn , _ , err := websocket.DefaultDialer.Dial("ws://localhost:8080/chat-server/ws?hash=XWVU7wbbr&user=Ben", nil)
 
 
 	if err != nil {
