@@ -148,7 +148,7 @@ func startHeartbeat(conn *websocket.Conn, sender string , receiver string , hash
 			now := time.Now()
 
             // update Redis: ws_status = 0
-            SaveSession(hash , sender , receiver , now , 0, 0)
+            SaveSession(hash , sender , receiver , now , 1,  0)
 
             return
         }
