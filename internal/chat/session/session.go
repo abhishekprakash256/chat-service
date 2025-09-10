@@ -27,14 +27,16 @@ package session
 import (
 
 	"fmt"
-	//"chat-service/api/db_connector"
+	"log"
 	"time"
 	"context"
+	"github.com/gorilla/websocket"
 
 	//wshandler "chat-service/api/ws"
 
 	"chat-service/internal/config"
 	rediscrud "chat-service/internal/storage/redis/crud"
+	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 
 )
 
@@ -90,38 +92,69 @@ func SaveSession(hash string, sender string, receiver string, lastSeen time.Time
 // params -- > usename , hash 
 // make the redis hash , take  timestamp and save the data 
 
-func StartSession(hash string , sender string , receiver string ) {
+func StartSession(conn *websocket.Conn ,  hash string , sender string ) {
 
 	fmt.Println("Session started")
 
-	//client := config.GlobalDbConn.RedisConn
+	ctx := context.Background()
+	pool := config.GlobalDbConn.PgsqlConn
 
-	//ctx := context.Background()
+	// Retrieve login record from DB
+	retrievedLogin, _ := pgsqlcrud.GetLoginData(ctx, "login", pool, hash)
 
+	var receiver string
 
-	// these are testing values
-	// time for testing 
-	now := time.Now()
+	// Check if username matches registered users
+	if sender == retrievedLogin.UserOne {
 
-	var wsStatus int 
+		receiver = retrievedLogin.UserTwo
 
-	wsStatus = 1 
+	} else  {
 
-	var notify int 
+		receiver = retrievedLogin.UserOne
+	
+	} 
 
-	notify = 1
-
-	SaveSession(hash , sender , receiver , now , wsStatus ,  notify)
-
-	// Session key format: session:<hash>:<sender>
 	//sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
-	// start the ws end point
-	//wshandler.WsHandler( sessionID )
 
-	fmt.Println("Session Done")
+	go startHeartbeat(conn, sender , receiver , hash  )
 
 }
 
+
+func startHeartbeat(conn *websocket.Conn, sender string , receiver string , hash string) {
+
+    ticker := time.NewTicker(30 * time.Second) // every 30s
+    defer ticker.Stop()
+
+	sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
+
+    for {
+        <-ticker.C
+
+        // send ping
+        if err := conn.WriteControl(
+            websocket.PingMessage,
+            []byte("ping"),
+            time.Now().Add(5*time.Second),
+        ); err != nil {
+            log.Printf("Heartbeat failed for %s: %v", sessionID, err)
+
+
+            // remove from ClientsWsMapper
+            delete(config.ClientsWsMapper, sessionID)
+
+			now := time.Now()
+
+            // update Redis: ws_status = 0
+            SaveSession(hash , sender , receiver , now , 0, 0)
+
+            return
+        }
+
+        log.Printf("Heartbeat OK for %s", sessionID)
+    }
+}
 
 

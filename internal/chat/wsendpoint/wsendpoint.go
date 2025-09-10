@@ -12,6 +12,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"chat-service/internal/config"
+	"chat-service/internal/chat/session"
 
 )
 
@@ -38,16 +39,16 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// get the data from url 
     hash := r.URL.Query().Get("hash")
-    user := r.URL.Query().Get("user")
+    sender := r.URL.Query().Get("user")
 
 
-    if hash == "" || user == "" {
+    if hash == "" || sender == "" {
         http.Error(w, "Missing hash or user", http.StatusBadRequest)
         return
     }
 
 	// make the session id 
-    sessionID := fmt.Sprintf("session:%s:%s", hash, user)
+    sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
@@ -60,5 +61,8 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
     config.ClientsWsMapper[sessionID] = conn
     log.Printf("Client connected: %s", sessionID)
 
-    // here you could start heartbeat loop for this conn
+    //start session
+	session.StartSession(conn , hash , sender)
+
+
 }
