@@ -16,6 +16,7 @@ import (
 	"chat-service/internal/chat/session"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 	"chat-service/internal/chat/messagereader"
+	"chat-service/internal/chat/messagehub"
 	
 
 )
@@ -90,16 +91,31 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
     sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
 	// save the session in global ws mapper
-    config.ClientsWsMapper[sessionID] = conn
+    //config.ClientsWsMapper[sessionID] = conn
+	AddClient(sessionID , conn)
 
     log.Printf("Client connected: %s", sessionID)
 
     // Step 4: Start session + heartbeat
 	session.StartSession(conn , hash , sender)
 
+	//go start the messagehub
+	go messagehub.HandleMessages()
+
 	messagereader.ReadMessage(conn)
 
 
 
 
+}
+
+
+
+// When a new connection arrives
+// to add multiple connections in one sessionID
+func AddClient(sessionID string, conn *websocket.Conn) {
+    if _, ok := config.ClientsWsMapper[sessionID]; !ok {
+        config.ClientsWsMapper[sessionID] = []*websocket.Conn{}
+    }
+    config.ClientsWsMapper[sessionID] = append(config.ClientsWsMapper[sessionID], conn)
 }

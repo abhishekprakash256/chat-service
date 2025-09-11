@@ -29,6 +29,8 @@ type RedisSessionData struct {
 	Notify      int
 }
 
+
+
 var UsedHashSet = "used_hash_set"
 
 var UniqueHashSet = "frest_hash_set"

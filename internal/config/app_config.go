@@ -31,4 +31,10 @@ type RegistrationtData struct {
 
 // make the global dictonary for session:hash:name  to ws clinet 
 
-var ClientsWsMapper = make(map[string]*websocket.Conn) 
+//var ClientsWsMapper = make(map[string]*websocket.Conn) 
+
+// ClientsWsMapper holds all active WebSocket connections per session:user
+var ClientsWsMapper = make(map[string][]*websocket.Conn)
+
+//broadcast channel for testing 
+var BroadCast = make(chan []byte)

@@ -116,6 +116,8 @@ func StartSession(conn *websocket.Conn, hash string, sender string) {
 
 	// Start heartbeat
 	go startHeartbeat(conn, sender, receiver, hash)
+
+	//can start the message hub here as well 
 }
 
 

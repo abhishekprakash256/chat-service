@@ -10,6 +10,7 @@ import (
 	"log"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"chat-service/internal/config"
 )
 
 
@@ -17,14 +18,15 @@ func ReadMessage(conn *websocket.Conn ) {
 
 	// read the message
 	for {
-		_, p, err := conn.ReadMessage()
+		_, msg, err := conn.ReadMessage()
 		if err != nil {
         	log.Println(err)
             return
         }
-    
+		
+		config.BroadCast <- msg
 		// print out that message for clarity
-        fmt.Println(string(p))
+        fmt.Println(string(msg))
 	}
 
 
