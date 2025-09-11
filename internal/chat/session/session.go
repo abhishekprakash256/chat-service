@@ -141,18 +141,23 @@ func startHeartbeat(conn *websocket.Conn, sender string, receiver string, hash s
 			websocket.PingMessage,
 			[]byte("ping"),
 			time.Now().Add(5*time.Second),
+
 		); err != nil {
 			log.Printf("Heartbeat failed for %s: %v", sessionID, err)
 
 			// cleanup: close socket and remove from mapper
-			_ = conn.Close()
+			conn.Close()
+
 			delete(config.ClientsWsMapper, sessionID)
 
 			// mark session as disconnected in Redis
 			now := time.Now()
+
 			if err := SaveSession(hash, sender, receiver, now, 0, 0); err != nil {
+
 				log.Printf("Failed to update session status for %s: %v", sessionID, err)
 			}
+			log.Printf("Session cleaned up for %s", sessionID)
 
 			return
 		}
