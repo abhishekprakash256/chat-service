@@ -15,6 +15,7 @@ import (
 	"chat-service/internal/config"
 	"chat-service/internal/chat/session"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
+	"chat-service/internal/chat/messagereader"
 	
 
 )
@@ -90,10 +91,15 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// save the session in global ws mapper
     config.ClientsWsMapper[sessionID] = conn
+
     log.Printf("Client connected: %s", sessionID)
 
     // Step 4: Start session + heartbeat
 	session.StartSession(conn , hash , sender)
+
+	messagereader.ReadMessage(conn)
+
+
 
 
 }
