@@ -47,6 +47,7 @@ import (
 //   }
 //
 func SaveMessage(Sender string, Receiver string, Message string, ChatID string) error {
+	
 	pool := config.GlobalDbConn.PgsqlConn
 	ctx := context.Background()
 
@@ -59,7 +60,8 @@ func SaveMessage(Sender string, Receiver string, Message string, ChatID string) 
 		Read:      false,
 	}
 
-	if !pgsqlcrud.InsertMessageData(ctx, "message", pool, msg) {
+
+	if !pgsqlcrud.InsertMessageData(ctx, config.MessageTable, pool, msg) {
 		return fmt.Errorf("failed to insert message into DB")
 	}
 

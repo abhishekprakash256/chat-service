@@ -61,3 +61,7 @@ CREATE TABLE IF NOT EXISTS message (
   timestamp      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   read           BOOLEAN NOT NULL DEFAULT FALSE
 );`
+
+
+
+var MessageTable = "message"
