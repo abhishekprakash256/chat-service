@@ -43,22 +43,40 @@ import (
 
 	"chat-service/internal/chat/register"
 	"chat-service/internal/chat/login"
+	"chat-service/internal/chat/logout"
 )
 
 
 
-
+/*
 func RegistrationHandler() {
 
-	http.HandleFunc("/chat-server/register", register.UserRegistration)
+	http.HandleFunc("/chat-server/user/register", register.UserRegistration)
 
 }
 
 
 func LoginHander() {
 
-	http.HandleFunc("/chat-server/login", login.LoginUser)
-	
+	http.HandleFunc("/chat-server/user/login", login.LoginUser)
+
+}
+
+func LogoutHandler() {
+
+	http.HandleFunc("/chat-server/user/logout", logout.LogOutUser)
+
+}
+
+*/
+
+
+
+// SetupUserRoutes attaches user routes to the given mux.
+func SetupUserRoutes(mux *http.ServeMux) {
+    mux.HandleFunc("/chat-server/user/register", register.UserRegistration)
+    mux.HandleFunc("/chat-server/user/login", login.LoginUser)
+    mux.HandleFunc("/chat-server/user/logout", logout.LogOutUser)
 }
 
 

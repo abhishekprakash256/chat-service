@@ -133,14 +133,18 @@ func main() {
 
 	defer pool.Close() // Ensures pool is closed when program exits
 
-	
-	httphandler.RegistrationHandler()
+	// make the mux for server 
+	mux := http.NewServeMux()
 
-	httphandler.LoginHander()
+	// call the routes
+	httphandler.SetupUserRoutes(mux)
 
 	// start the ws handler 
 	wshandler.WsHandler()
 
+	// pass the mux
 	fmt.Println("Server started on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	if err := http.ListenAndServe(":8080", mux); err != nil {
+		log.Fatal(err)
+	}
 }
