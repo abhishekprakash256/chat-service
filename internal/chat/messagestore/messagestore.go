@@ -20,35 +20,49 @@ import (
 )
 
 
-
-func SaveMessage(Sender string , Receiver string , Message string , ChatID string) error {
-
-	// get the pgsql conn 
+// SaveMessage persists a chat message into the PostgreSQL database.
+//
+// It creates a MessageData struct with sender, receiver, message content,
+// chat ID, current timestamp, and read status, then attempts to insert
+// it into the "message" table via pgsqlcrud.InsertMessageData.
+//
+// Parameters:
+//   - Sender   (string): Username or ID of the message sender.
+//   - Receiver (string): Username or ID of the message recipient.
+//   - Message  (string): The actual message text.
+//   - ChatID   (string): Unique identifier of the chat session.
+//
+// Returns:
+//   - error: Returns an error if inserting into the database fails,
+//            otherwise returns nil on success.
+//
+// Behavior:
+//   - On success, logs "Message saved successfully in SaveMessage".
+//   - On failure, logs the error and returns a descriptive error value.
+//
+// Example:
+//   err := messagestore.SaveMessage("alice", "bob", "Hello Bob!", "chat123")
+//   if err != nil {
+//       log.Println("Failed to save message:", err)
+//   }
+//
+func SaveMessage(Sender string, Receiver string, Message string, ChatID string) error {
 	pool := config.GlobalDbConn.PgsqlConn
-
-	// start the context 
 	ctx := context.Background()
 
-
-	// Test message data
 	msg := config.MessageData{
-		ChatID:   ChatID,
-		Sender:   Sender,
-		Receiver: Receiver,
-		Message:  Message,
+		ChatID:    ChatID,
+		Sender:    Sender,
+		Receiver:  Receiver,
+		Message:   Message,
 		Timestamp: time.Now(),
-		Read:  false,
+		Read:      false,
 	}
 
-	// Insert the message data
 	if !pgsqlcrud.InsertMessageData(ctx, "message", pool, msg) {
-
 		return fmt.Errorf("failed to insert message into DB")
 	}
 
-	log.Println("Message saved succesfully in savemessage")
-
+	log.Println("Message saved successfully in SaveMessage")
 	return nil
-
-
 }

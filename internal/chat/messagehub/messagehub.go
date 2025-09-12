@@ -25,6 +25,7 @@ import (
 // HandleMessages listens on the broadcast channel and routes messages
 // to the correct WebSocket clients based on chat hash and recipient username.
 func HandleMessages() {
+    
     for {
         // Grab next message from broadcast channel
         msg := <-config.BroadCast
