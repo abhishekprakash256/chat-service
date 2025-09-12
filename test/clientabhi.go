@@ -1,4 +1,18 @@
-// works in mac 
+// works in linux
+
+/*
+{
+    "status": "success",
+    "code": 200,
+    "data": {
+        "hash": "6LRcGlCjvNB",
+        "userOne": "Abhi",
+        "userTwo": "Anny"
+    }
+}
+
+*/
+
 
 package main
 
@@ -22,9 +36,9 @@ type Message struct {
 
 func main() {
 	// hardcode for now
-	chatHash := "XWVU7wbbr"
-	sender := "Ben"
-	recipient := "Bob" // 👈 change this to whoever you want to send messages to
+	chatHash := "6LRcGlCjvNB"
+	sender := "Abhi"
+	recipient := "Anny" // change this to whoever you want to send messages to
 
 	conn, _, err := websocket.DefaultDialer.Dial(
 		fmt.Sprintf("ws://localhost:8080/chat-server/ws?hash=%s&user=%s", chatHash, sender),
