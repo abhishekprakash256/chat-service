@@ -43,5 +43,5 @@ type IncomingMessage struct {
 // ClientsWsMapper holds all active WebSocket connections per session:user
 var ClientsWsMapper = make(map[string][]*websocket.Conn)
 
-//broadcast channel for testing 
+//broadcast channel for broadcasting message
 var BroadCast = make(chan []byte)
