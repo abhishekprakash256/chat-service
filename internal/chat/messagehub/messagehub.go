@@ -33,7 +33,7 @@ func HandleMessages() {
         var incoming struct {
             Hash     string `json:"hash"`
             Sender   string `json:"sender"`
-            Receiver string `json:"recipient"`
+            Receiver string `json:"receiver"`
             Message  string `json:"message"`
         }
 

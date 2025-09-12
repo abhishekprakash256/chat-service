@@ -87,8 +87,8 @@ func main() {
 	// Test message data
 	msg := config.MessageData{
 		ChatID:       "abc123",
-		SenderName:   "Abhi",
-		ReceiverName: "Anny",
+		Sender:   "Abhi",
+		Receiver: "Anny",
 		Message:      "Hello There!",
 		Timestamp:    time.Now(),
 		Read:         false,
@@ -115,7 +115,7 @@ func main() {
 
 	// to print the message from the database
 	for _, m := range messages {
-		fmt.Printf("Message from %s to %s: %s\n", m.SenderName, m.ReceiverName, m.Message, m.Timestamp, m.Read)
+		fmt.Printf("Message from %s to %s: %s\n", m.Sender, m.Receiver, m.Message, m.Timestamp, m.Read)
 	}
 
 	// Test delete message data

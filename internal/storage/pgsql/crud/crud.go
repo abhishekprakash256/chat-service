@@ -38,7 +38,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 	var messages []config.MessageData
 	for rows.Next() {
 		var msg config.MessageData
-		err := rows.Scan(&msg.MessageID, &msg.ChatID, &msg.SenderName, &msg.ReceiverName, &msg.Message, &msg.Timestamp, &msg.Read)
+		err := rows.Scan(&msg.MessageID, &msg.ChatID, &msg.Sender, &msg.Receiver, &msg.Message, &msg.Timestamp, &msg.Read)
 		if err != nil {
 			fmt.Println("Row scan failed:", err)
 			continue
@@ -100,8 +100,8 @@ func InsertMessageData(ctx context.Context, tableName string, pgconnector *pgxpo
 		ctx,
 		query,
 		data.ChatID,
-		data.SenderName,
-		data.ReceiverName,
+		data.Sender,
+		data.Receiver,
 		data.Message,
 		data.Timestamp,
 		data.Read,

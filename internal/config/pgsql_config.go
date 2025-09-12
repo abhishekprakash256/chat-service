@@ -34,8 +34,8 @@ type LoginData struct {
 type MessageData struct {
 	MessageID    int
 	ChatID       string
-	SenderName   string
-	ReceiverName string
+	Sender   string
+	Receiver string
 	Message      string
 	Timestamp    time.Time
 	Read         bool

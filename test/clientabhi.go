@@ -30,7 +30,7 @@ import (
 type Message struct {
 	Hash      string `json:"hash"`
 	Sender    string `json:"sender"`
-	Recipient string `json:"recipient"`
+	Recipient string `json:"receiver"`
 	Message   string `json:"message"`
 }
 
