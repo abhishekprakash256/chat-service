@@ -28,6 +28,13 @@ type RegistrationtData struct {
 }
 
 
+type IncomingMessage struct {
+
+	Hash     string `json:"hash"`
+    Sender   string `json:"sender"`
+    Receiver string `json:"receiver"`
+    Message  string `json:"message"`
+}
 
 // make the global dictonary for session:hash:name  to ws clinet 
 

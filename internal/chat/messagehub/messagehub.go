@@ -30,12 +30,7 @@ func HandleMessages() {
         msg := <-config.BroadCast
 
         // Unmarshal the incoming JSON into a struct
-        var incoming struct {
-            Hash     string `json:"hash"`
-            Sender   string `json:"sender"`
-            Receiver string `json:"receiver"`
-            Message  string `json:"message"`
-        }
+        var incoming config.IncomingMessage
 
         if err := json.Unmarshal(msg, &incoming); err != nil {
             log.Println("Invalid message format:", err)
