@@ -37,7 +37,8 @@ func main() {
 	pool := config.GlobalDbConn.PgsqlConn
 
 	// Step 6: Retrieve message data
-	messages := pgsqlcrud.GetMessageData(ctx, "message", pool, "6LRcGlCjvNB", "Anny")
+	// the data will be changed as per db used where in mac or linux
+	messages := pgsqlcrud.GetMessageData(ctx, "message", pool, "XWVU7wbbr", "Ben")
 
 	// print the message data
 	//fmt.Printf("Messages: %+v\n", messages)
