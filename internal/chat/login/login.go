@@ -223,7 +223,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// Check if username matches registered users
 	if data.UserName == retrievedLogin.UserOne {
-		
+	
 		sender = retrievedLogin.UserOne
 		receiver = retrievedLogin.UserTwo
 	} else if data.UserName == retrievedLogin.UserTwo {
@@ -245,7 +245,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
 
-	// start the session 
+	// start the session
 	//session.StartSession(data.Hash , sender ,  receiver )
 
 	// data to save in the redis sesssion
@@ -255,7 +255,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// save the data
 	session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
-
+	
 	// Success response
 	resp := LoginSuccess{
 		Status: "success",
