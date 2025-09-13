@@ -1,4 +1,7 @@
-
+/*
+The wsendpoint to make the chat-end point for the data. The end point is used for the chat and sending the data for the user and get the data. 
+The data is fetched for the data end point. 
+*/
 package wsendpoint
 
 
@@ -103,8 +106,6 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 	go messagehub.HandleMessages()
 
 	messagereader.ReadMessage(conn)
-
-
 
 
 }
