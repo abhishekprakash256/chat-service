@@ -188,6 +188,14 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 //     "code": 401,
 //     "message": "Login Failed Wrong Username or Hash"
 //   }
+// when login clicked the ChatID and the username will be stored in the localsession storage for the front end 
+// using the sessionStortage 
+// as this in the json
+// {  
+//  "ChatID": "XWVU7wbbr",
+//  "UserName": "Ben"
+// }
+
 func LoginUser(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	pool := config.GlobalDbConn.PgsqlConn
@@ -255,7 +263,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// save the data
 	session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
-	
+
 	// Success response
 	resp := LoginSuccess{
 		Status: "success",
