@@ -250,7 +250,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// data to save in the redis sesssion
 	now := time.Now()
-	ws_connected := 1 
+	ws_connected := 1
 	notify := 0 
 
 	// save the data
