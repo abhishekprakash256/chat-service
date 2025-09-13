@@ -54,10 +54,10 @@ HSET session:abc123:Abhi notify 0
 when login store the session data into the redis
 and start hearbeat protocol until logout or endchat
 
+
 */
 
 /*
-
 
 
 func LoginUser 
@@ -209,7 +209,9 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve login record from DB
 	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.Hash)
+	
 	if err != nil {
+		
 		writeError(w, http.StatusUnauthorized, "Login Failed: Hash not found")
 		log.Printf("Login failed: hash %s not found (%v)", data.Hash, err)
 		return
@@ -221,12 +223,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// Check if username matches registered users
 	if data.UserName == retrievedLogin.UserOne {
+		
 		sender = retrievedLogin.UserOne
 		receiver = retrievedLogin.UserTwo
 	} else if data.UserName == retrievedLogin.UserTwo {
+		
 		sender = retrievedLogin.UserTwo
 		receiver = retrievedLogin.UserOne
 	} else {
+		
 		// username does not match either registered user → fail login
 		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or Hash")
 		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.Hash)
@@ -264,4 +269,5 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(resp)
+
 }
