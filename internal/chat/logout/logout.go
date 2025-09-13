@@ -6,7 +6,7 @@ package logout
 
 
 import (
-	
+
 	"fmt"
 	"net/http"
 )
@@ -14,5 +14,6 @@ import (
 
 func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 
-	fmt.Println("logout clicked")
+	fmt.Println("logout clicked ...... ")
+	
 }
