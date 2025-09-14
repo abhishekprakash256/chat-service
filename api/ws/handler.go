@@ -13,10 +13,10 @@ import (
 
 
 
-func WsHandler() {
+func WsHandler(mux *http.ServeMux) {
 
 
-    http.HandleFunc("/chat-server/ws", wsendpoint.WSEndpoint) 
+    mux.HandleFunc("/chat-server/ws", wsendpoint.WSEndpoint) 
        
 	
 }

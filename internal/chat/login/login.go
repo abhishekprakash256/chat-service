@@ -250,9 +250,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
 
 	// StartSession(hash string , sender string , reciever string )
-
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
-
+	
 	// start the session
 	//session.StartSession(data.Hash , sender ,  receiver )
 

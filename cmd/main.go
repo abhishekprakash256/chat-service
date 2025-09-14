@@ -140,7 +140,7 @@ func main() {
 	httphandler.SetupUserRoutes(mux)
 
 	// start the ws handler 
-	wshandler.WsHandler()
+	wshandler.WsHandler(mux)
 
 	// pass the mux
 	fmt.Println("Server started on :8080")

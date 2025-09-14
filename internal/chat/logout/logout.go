@@ -9,19 +9,25 @@ import (
 
 	"fmt"
 	"encoding/json"
-	"strings"
+	"time"
 	"context"
 	"net/http"
 	"log"
 	"chat-service/internal/config"
-	rediscrud "chat-service/internal/storage/redis/crud"
+	"chat-service/internal/chat/session"
+	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
+	//rediscrud "chat-service/internal/storage/redis/crud"
 
 
 
 )
 
 
-type IncomingMessage struct ()
+type LogoutRequest struct  {
+
+	ChatID string `json:"hash"`
+	UserName string `json:"username"`
+}
 
 
 // SuccessResponse defines a standard logout success payload
@@ -40,6 +46,8 @@ type ErrorResponse struct {
 
 
 
+
+
 // helper to write error consistently
 func writeError(w http.ResponseWriter, code int, msg string) {
 
@@ -52,11 +60,12 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 	})
 
 }
+
 // the logout function will take a post request 
 // get the sessionid  which has chatid and userid 
 // find the sesisonid in redis string and then upodate the session data
 // stop the session 
-// delete the currrent ws client connection from the clinetwsmapper 
+// delete the currrent ws client connection from the clinetwsmapper
 func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 
 	// get the method
@@ -68,59 +77,80 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 	}
 
 	// Try to get sessionID from query param: /logout?session=session:abc:User1
-	sessionID := r.URL.Query().Get("session")
-
-	// Or from JSON body
-	if sessionID == "" {
-		var body struct {
-			Session string `json:"session"`
-		}
-
-		if err := json.NewDecoder(r.Body).Decode(&body); err == nil {
-
-			sessionID = body.Session
-		}
-	}
-
-	//get the chat id
-	if sessionID == "" || !strings.HasPrefix(sessionID, "session:") {
-
-		writeError(w, http.StatusBadRequest, "Missing or invalid session ID")
-
+	// Decode request JSON
+	var data LogoutRequest
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		writeError(w, http.StatusBadRequest, "Invalid JSON")
 		return
 	}
 
-	// make the redis client
-	client := config.GlobalDbConn.RedisConn
+	// Debug log
+	fmt.Printf( "Logout attempt: %s for chat %s\n", data.UserName, data.ChatID )
+
+	// get the pool 
+	pool := config.GlobalDbConn.PgsqlConn
 
 	//context passing baground
 	ctx := context.Background()
 
-	// Delete session from Redis
-	err := rediscrud.DeleteSessionData(ctx, client, sessionID)
+	// Retrieve login record from DB
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.ChatID)
 
 	if err != nil {
-		log.Printf("Failed to delete session %s: %v", sessionID, err)
-		writeError(w, http.StatusInternalServerError, "Logout failed")
+		
+		writeError(w, http.StatusUnauthorized, "Login Failed: Hash not found")
+		log.Printf("Login failed: hash %s not found (%v)", data.ChatID, err)
 		return
 	}
 
-	// err passed
-	if err != nil {
+	// make the sender and reciver 
+	var sender string 
+	var receiver string 
 
-		log.Printf("Failed to delete session %s: %v", sessionID, err)
-		writeError(w, http.StatusInternalServerError, "Logout failed")
+	// Check if username matches registered users
+	if data.UserName == retrievedLogin.UserOne {
+	
+		sender = retrievedLogin.UserOne
+		receiver = retrievedLogin.UserTwo
+	} else if data.UserName == retrievedLogin.UserTwo {
+		
+		sender = retrievedLogin.UserTwo
+		receiver = retrievedLogin.UserOne
+	} else {
+		
+		// username does not match either registered user → fail login
+		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or Hash")
+		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.ChatID)
 		return
 	}
 
+
+	// data to save in the redis sesssion
+	now := time.Now()
+	ws_connected := 0
+	notify := 0 
+
+	// save the data with ws connected 1 
+	session.SaveSession(data.ChatID, sender , receiver , now , ws_connected, notify)
+
+	// make the sessionid 
+	sessionID := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
+	
 	// Also close WebSocket if still in memory 
-	if conn, ok := config.ClientsWsMapper[sessionID]; ok {
-
+	if conns, ok := config.ClientsWsMapper[sessionID]; ok {
+	
+	//go through all the connection and delete all 
+	for _, conn := range conns {
+        
 		conn.Close()
 
 		delete(config.ClientsWsMapper, sessionID)
-
+		
+		}
+    
+	
 	}
+
 
 	// Send success response
 	resp := SuccessResponse{
@@ -137,5 +167,7 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 	json.NewEncoder(w).Encode(resp)
 
 	log.Printf("User logged out, session %s removed", sessionID)
+
+	
 
 }
