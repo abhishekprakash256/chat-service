@@ -19,8 +19,7 @@ import (
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 	//rediscrud "chat-service/internal/storage/redis/crud"
 
-
-
+	
 )
 
 
@@ -136,6 +135,9 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 
 	// make the sessionid 
 	sessionID := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
+
+	// stop the session id 
+	
 	
 	// Also close WebSocket if still in memory 
 	if conns, ok := config.ClientsWsMapper[sessionID]; ok {

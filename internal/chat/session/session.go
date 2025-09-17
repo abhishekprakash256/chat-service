@@ -167,3 +167,42 @@ func startHeartbeat(conn *websocket.Conn, sender string, receiver string, hash s
 		log.Printf("Heartbeat OK for %s", sessionID)
 	}
 }
+
+
+
+// StopSession cleanly closes a user's session.
+//
+// Params:
+//   - conn: active WebSocket connection
+//   - hash: chat session identifier
+//   - sender: the user logging out / disconnecting
+//   - receiver: the opposite user
+func StopSession(conn *websocket.Conn, hash string, sender string, receiver string) {
+	
+	//make the session id 
+	sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
+
+    // Gracefully close the WebSocket
+    if conn != nil {
+        _ = conn.WriteMessage(
+            websocket.CloseMessage,
+            websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Session closed"),
+        )
+        conn.Close()
+    }
+
+    // Remove from in-memory map
+    delete(config.ClientsWsMapper, sessionID)
+    log.Printf("Stopped session and removed from mapper: %s", sessionID)
+
+    // Update Redis session to mark disconnected
+    now := time.Now()
+
+    err := SaveSession(hash, sender, receiver, now, 0, 0)
+
+    if err != nil {
+
+        log.Printf("Failed to update session state for %s: %v", sessionID, err)
+		
+    }
+}
