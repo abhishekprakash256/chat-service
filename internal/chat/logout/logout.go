@@ -13,6 +13,7 @@ import (
 	"context"
 	"net/http"
 	"log"
+	"github.com/gorilla/websocket"
 	"chat-service/internal/config"
 	"chat-service/internal/chat/session"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
@@ -141,11 +142,13 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 	
 	//go through all the connection and delete all 
 	for _, conn := range conns {
+
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Logged out"))
         
 		conn.Close()
 
 		delete(config.ClientsWsMapper, sessionID)
-		
+
 		}
     
 	
