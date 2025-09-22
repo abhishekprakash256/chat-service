@@ -77,6 +77,7 @@ func SetupUserRoutes(mux *http.ServeMux) {
     mux.HandleFunc("/chat-server/user/register", register.UserRegistration)
     mux.HandleFunc("/chat-server/user/login", login.LoginUser)
     mux.HandleFunc("/chat-server/user/logout", logout.LogOutUser)
+	mux.HandleFunc("/chat-server/user/logout" , endchat.UserEndChat)
 }
 
 
