@@ -93,7 +93,7 @@ func StartSession(conn *websocket.Conn, hash string, sender string) {
 	pool := config.GlobalDbConn.PgsqlConn
 
 	// Retrieve login record from DB
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, hash)
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable, pool, hash)
 	if err != nil {
 		log.Printf("Failed to get login data for hash %s: %v", hash, err)
 		return

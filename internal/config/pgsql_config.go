@@ -65,3 +65,5 @@ CREATE TABLE IF NOT EXISTS message (
 
 
 var MessageTable = "message"
+
+var LoginTable = "login"

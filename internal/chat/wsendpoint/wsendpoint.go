@@ -21,7 +21,7 @@ import (
 	"chat-service/internal/chat/messagereader"
 	"chat-service/internal/chat/messagehub"
 
-	
+
 )
 
 
@@ -64,7 +64,7 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 	// Step 1: Validate against DB
 	ctx := context.Background()
 	pool := config.GlobalDbConn.PgsqlConn
-	loginData, err := pgsqlcrud.GetLoginData(ctx, "login", pool, hash)
+	loginData, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, hash)
 
 	if err != nil {
 		http.Error(w, "Invalid hash", http.StatusUnauthorized)

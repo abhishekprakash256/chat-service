@@ -24,8 +24,8 @@ import (
 
 // EndChatRequest represents the expected logout request payload.
 type EndChatRequest struct {
-	ChatID   string `json:"hash"`
-	UserName string `json:"username"`
+	ChatID   string `json:"Hash"`
+	UserName string `json:"UserName"`
 }
 
 // SuccessResponse defines a standard logout success payload.
@@ -142,7 +142,7 @@ func UserEndChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete login data
-	if !pgsqlcrud.DeleteLoginData(ctx, config.MessageTable, pool, data.ChatID) {
+	if !pgsqlcrud.DeleteLoginData(ctx, "login", pool, data.ChatID) {
 		log.Println("Delete login data failed")
 	}
 

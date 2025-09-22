@@ -25,8 +25,8 @@ import (
 
 type LogoutRequest struct  {
 
-	ChatID string `json:"hash"`
-	UserName string `json:"username"`
+	ChatID string `json:"Hash"`
+	UserName string `json:"UserName"`
 }
 
 
@@ -94,7 +94,7 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 	ctx := context.Background()
 
 	// Retrieve login record from DB
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.ChatID)
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, data.ChatID)
 
 	if err != nil {
 		

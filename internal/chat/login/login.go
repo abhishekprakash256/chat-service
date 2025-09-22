@@ -124,8 +124,8 @@ import (
 
 // LoginRequest represents the expected JSON body for login requests.
 type LoginRequest struct {
-	Hash     string `json:"hash"`     // Chat session hash
-	UserName string `json:"username"` // Username trying to log in
+	Hash     string `json:"Hash"`     // Chat session hash
+	UserName string `json:"UserName"` // Username trying to log in
 }
 
 // LoginSuccess represents a successful login response.
@@ -216,7 +216,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
 
 	// Retrieve login record from DB
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.Hash)
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, data.Hash)
 	
 	if err != nil {
 		
@@ -251,7 +251,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	// StartSession(hash string , sender string , reciever string )
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
-	
+
 	// start the session
 	//session.StartSession(data.Hash , sender ,  receiver )
 
