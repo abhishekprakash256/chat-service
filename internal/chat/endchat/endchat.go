@@ -17,7 +17,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"chat-service/internal/config"
-	"chat-service/internal/chat/session"
+	//"chat-service/internal/chat/session"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 	rediscrud "chat-service/internal/storage/redis/crud"
 )
@@ -123,16 +123,27 @@ func UserEndChat(w http.ResponseWriter, r *http.Request) {
 	closeWebSockets(sessionIDReceiver)
 
 	// Delete session data from Redis
-	if !rediscrud.DeleteSessionData(ctx, rdb, sessionIDSender) {
-		log.Printf("Warning: failed to delete redis session %s", sessionIDSender)
-	}
-	if !rediscrud.DeleteSessionData(ctx, rdb, sessionIDReceiver) {
-		log.Printf("Warning: failed to delete redis session %s", sessionIDReceiver)
+	if ok, err := rediscrud.DeleteSessionData(ctx, rdb, sessionIDSender); !ok {
+		log.Printf("Error deleting Redis session %s: %v", sessionIDSender, err)
+		writeError(w, http.StatusInternalServerError, "Failed to clean up sender session")
+		return
 	}
 
+	if ok, err := rediscrud.DeleteSessionData(ctx, rdb, sessionIDReceiver); !ok {
+		log.Printf("Error deleting Redis session %s: %v", sessionIDReceiver, err)
+		writeError(w, http.StatusInternalServerError, "Failed to clean up receiver session")
+		return
+	}
+
+
 	// Remove chat messages
-	if err := pgsqlcrud.DeleteMessageData(ctx, config.MessageTable, pool, data.ChatID); err != nil {
-		log.Printf("Warning: failed to delete message history for chat %s: %v", data.ChatID, err)
+	if !pgsqlcrud.DeleteMessageData(ctx, config.MessageTable, pool, data.ChatID) {
+		log.Println("Delete message failed")
+	}
+
+	// delete login data
+	if !pgsqlcrud.DeleteLoginData(ctx, config.MessageTable, pool, data.ChatID) {
+		log.Println("Delete login data failed")
 	}
 
 	// TODO: optionally stop heartbeat goroutines for sender/receiver

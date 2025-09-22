@@ -44,6 +44,7 @@ import (
 	"chat-service/internal/chat/register"
 	"chat-service/internal/chat/login"
 	"chat-service/internal/chat/logout"
+	"chat-service/internal/chat/endchat"
 )
 
 
@@ -77,7 +78,7 @@ func SetupUserRoutes(mux *http.ServeMux) {
     mux.HandleFunc("/chat-server/user/register", register.UserRegistration)
     mux.HandleFunc("/chat-server/user/login", login.LoginUser)
     mux.HandleFunc("/chat-server/user/logout", logout.LogOutUser)
-	mux.HandleFunc("/chat-server/user/logout" , endchat.UserEndChat)
+	mux.HandleFunc("/chat-server/user/endchat" , endchat.UserEndChat)
 }
 
 

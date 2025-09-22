@@ -75,11 +75,11 @@ func GetSessionData(ctx context.Context, rdb *redis.Client, key string) (config.
 
 
 
-func DeleteSessionData(ctx context.Context, rdb *redis.Client, key string) error {
+func DeleteSessionData(ctx context.Context, rdb *redis.Client, key string) (bool, error) {
     // Attempt to delete the session
     err := rdb.Del(ctx, key).Err()
     if err != nil {
-        return fmt.Errorf("failed to delete session %q: %w", key, err)
+        return false , fmt.Errorf("failed to delete session %q: %w", key, err)
     }
-    return nil
+    return true, nil
 }
