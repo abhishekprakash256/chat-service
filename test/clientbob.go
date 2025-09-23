@@ -27,7 +27,7 @@ type Message struct {
 
 func main() {
 	// hardcode for now
-	chatHash := "XWVU7wbbr"
+	chatHash := "DZ5uqxGii"
 	sender := "Bob"
 	recipient := "Ben" // 👈 change this to whoever you want to send messages to
 
