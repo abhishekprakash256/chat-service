@@ -8,7 +8,7 @@ package messagefetch
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"log"
 	"net/http"
 
@@ -30,6 +30,14 @@ type MessageFetchRequest struct {
 }
 
 
+type MessagesResponse struct {
+    ChatID     string    `json:"chatId"`
+    Messages   []config.MessageData `json:"messages"`
+    Pagination struct {
+        HasMore    bool `json:"hasMore"`
+        NextCursor int  `json:"nextCursor"`
+    } `json:"pagination"`
+}
 
 // ErrorResponse represents a standardized error response.
 type ErrorResponse struct {
@@ -56,15 +64,16 @@ type MessageFetchResponse struct {
 }
 
 
-// check for the post request 
-// check for the login 
-// get the message 
-
-
-
-func UserMessageFetch( w http.ResponseWriter, r *http.Request  ) {
-
-		// Enforce POST method
+// UserMessageFetch handles fetching messages for a user in a chat session.
+//
+// Flow:
+//   1. Enforce POST method.
+//   2. Decode request payload { chatId, userName }.
+//   3. Validate that the user belongs to the chat (via login table).
+//   4. Fetch messages for the chat from Postgres.
+//   5. Return messages as JSON with pagination metadata.
+func UserMessageFetch(w http.ResponseWriter, r *http.Request) {
+	// Enforce POST method
 	if r.Method != http.MethodPost {
 		writeError(w, http.StatusMethodNotAllowed, "Only POST allowed")
 		return
@@ -76,46 +85,43 @@ func UserMessageFetch( w http.ResponseWriter, r *http.Request  ) {
 		writeError(w, http.StatusBadRequest, "Invalid JSON payload")
 		return
 	}
-	log.Printf("Logout attempt: %s for chat %s", data.UserName, data.ChatID)
+	log.Printf("Message fetch attempt: user=%s chat=%s", data.UserName, data.ChatID)
 
 	ctx := context.Background()
-
 	pool := config.GlobalDbConn.PgsqlConn
 
 	// Retrieve login record (chat participants)
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.ChatID)
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable, pool, data.ChatID)
+
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "Chat not found for given hash")
-		log.Printf("Chat end failed: hash %s not found (%v)", data.ChatID, err)
+		log.Printf("Chat not found: hash=%s err=%v", data.ChatID, err)
 		return
 	}
 
-	// Identify sender/receiver
-	var sender, receiver string
-	switch data.UserName {
-	case retrievedLogin.UserOne:
-		sender, receiver = retrievedLogin.UserOne, retrievedLogin.UserTwo
-	case retrievedLogin.UserTwo:
-		sender, receiver = retrievedLogin.UserTwo, retrievedLogin.UserOne
-	default:
+	// Verify that the user belongs to this chat
+	if data.UserName != retrievedLogin.UserOne && data.UserName != retrievedLogin.UserTwo {
 		writeError(w, http.StatusUnauthorized, "Invalid username for this chat")
 		log.Printf("Invalid username %s for chat %s", data.UserName, data.ChatID)
 		return
 	}
 
-	// Compose session keys
-	sessionIDSender := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
-	sessionIDReceiver := fmt.Sprintf("session:%s:%s", data.ChatID, receiver)
+	// Fetch messages from DB
+	messageData := pgsqlcrud.GetMessageData(ctx, config.MessageTable, pool, data.ChatID, data.UserName)
+	
+	// Build response
+	resp := MessagesResponse{
+		ChatID:   data.ChatID,
+		Messages: messageData, // <-- ensure pgsqlcrud.GetMessageData returns []Message
+	}
+	// Placeholder pagination (later implement limit/offset or cursor)
+	resp.Pagination.HasMore = false
+	resp.Pagination.NextCursor = 0
 
-	fmt.Printf("Messages: %s\n", sessionIDSender)
-	fmt.Printf("Messages: %s\n", sessionIDReceiver)
-
-	//get the message 
-
-	messageData := pgsqlcrud.GetMessageData(ctx, config.MessageTable, pool,  data.ChatID , sender)
-
-	// print the message data
-	fmt.Printf("Messages: %+v\n", messageData)
-
-
+	// Return JSON response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(resp); err != nil {
+		log.Printf("JSON encode error: %v", err)
+	}
 }
