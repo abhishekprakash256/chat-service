@@ -12,6 +12,7 @@ import (
 	"log"
 	"time"
 	"net/http"
+	"github.com/rs/cors"
 
 	"chat-service/api/db_connector"
 
@@ -139,14 +140,26 @@ func main() {
 	// call the routes
 	httphandler.SetupUserRoutes(mux)
 
-	// start the ws handler 
+	// start the WS handler (no CORS needed here)
 	wshandler.WsHandler(mux)
 
-	// pass the mux
+	// wrap HTTP mux with CORS middleware
+	c := cors.New(cors.Options{
+
+		// for prod use https://meabhi.me
+		AllowedOrigins:   []string{"http://localhost:3000"},  // use for dev
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := c.Handler(mux)
+
 	fmt.Println("Server started on :8080")
-	if err := http.ListenAndServe(":8080", mux); err != nil {
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal(err)
 	}
+
 
 	
 }
