@@ -269,7 +269,8 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		Code:   http.StatusOK,
 		Data: map[string]string{
 			"hash":     data.Hash,
-			"userName": data.UserName,
+			"sender": data.UserName,
+			"receiver" : receiver , 
 		},
 	}
 
