@@ -89,8 +89,9 @@ returns
     "code": 200,
     "data": {
         "hash": "enyVF5JkoV0",
-        "userName": "Sam",
-    }
+        "sender": "Sam",
+		"reciever": "Ben"
+    }	
 }
 
 
