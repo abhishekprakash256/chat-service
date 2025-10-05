@@ -75,6 +75,8 @@ func LogoutHandler() {
 
 
 // SetupUserRoutes attaches user routes to the given mux.
+
+/*
 func SetupUserRoutes(mux *http.ServeMux) {
     mux.HandleFunc("/chat-server/user/register", register.UserRegistration)
     mux.HandleFunc("/chat-server/user/login", login.LoginUser)
@@ -83,5 +85,12 @@ func SetupUserRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/chat-server/user/fetchmessage" , messagefetch.UserMessageFetch)
 }
 
+*/
 
-
+func SetupUserRoutes(mux *http.ServeMux) {
+    mux.HandleFunc("/chat-service/api/v1/users/register", register.UserRegistration)  // POST
+    mux.HandleFunc("/chat-service/api/v1/users/login", login.LoginUser)              // POST
+    mux.HandleFunc("/chat-service/api/v1/users/logout", logout.LogOutUser)           // POST
+    mux.HandleFunc("/chat-service/api/v1/chats/end", endchat.UserEndChat)            // POST
+    mux.HandleFunc("/chat-service/api/v1/users/messages", messagefetch.UserMessageFetch) // GET
+}

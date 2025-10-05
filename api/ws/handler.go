@@ -16,7 +16,7 @@ import (
 func WsHandler(mux *http.ServeMux) {
 
 
-    mux.HandleFunc("/chat-server/ws", wsendpoint.WSEndpoint) 
+    mux.HandleFunc("/chat-server/api/v1/ws/chat", wsendpoint.WSEndpoint) 
        
 	
 }
