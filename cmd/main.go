@@ -155,8 +155,8 @@ func main() {
 
 	handler := c.Handler(mux)
 
-	fmt.Println("Server started on :8080")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	fmt.Println("Server started on :8050")
+	if err := http.ListenAndServe(":8050", handler); err != nil {
 		log.Fatal(err)
 	}
 
