@@ -1,4 +1,24 @@
 --> 
+
+```
+chat_service 
+    ├── message_saving_service
+    ├── client_status_service
+    └── message_router_service
+hash_service 
+redis_service
+pgsql_service
+redis_config
+pgsql_config  
+
+
+```
+
+---
+
+### 🔹 Mapped into refined structure
+
+```
 chat-app/
 │── cmd/
 │   └── chatserver/
@@ -38,3 +58,27 @@ chat-app/
 │
 ├── go.mod
 └── README.md
+```
+
+
+
+
+| Old Folder                            | New Location (Go Convention) |
+| ------------------------------------- | ---------------------------- |
+| `chat_service/message_saving_service` | `internal/chat/saver/`       |
+| `chat_service/client_status_service`  | `internal/chat/status/`      |
+| `chat_service/message_router_service` | `internal/chat/router/`      |
+| `hash_service`                        | `internal/hash/`             |
+| `redis_service`                       | `internal/storage/redis/`    |
+| `pgsql_service`                       | `internal/storage/pgsql/`    |
+| `redis_config`                        | `internal/config/redis.go`   |
+| `pgsql_config`                        | `internal/config/pgsql.go`   |
+
+
+
+
+* Your **domain logic** (chat) lives under `internal/chat/`.
+* Your **infra code** (DB, Redis) lives under `internal/storage/`.
+* Configs are centralized in `internal/config/`.
+* Reusable pieces go to `pkg/`.
+* Entrypoints (running server, worker) live in `cmd/`.

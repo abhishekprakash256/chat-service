@@ -1,0 +1,29 @@
+[Unit]
+Description=Go Chat Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/chat-service
+
+# Run the compiled Go binary
+ExecStart=/home/ubuntu/chat-service/chat-server
+
+# Automatically restart if the service crashes
+Restart=always
+RestartSec=5
+
+# Environment variables
+Environment=PORT=8050
+Environment=GO_ENV=production
+Environment=REDIS_URL=redis://localhost:6379
+Environment=PG_DSN=postgres://user:password@localhost:5432/chatdb?sslmode=disable
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

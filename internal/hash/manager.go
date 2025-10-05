@@ -1,19 +1,16 @@
 /*
-The function to make the store the hash into the redis hash set 
+The function to make the store the hash into the redis hash set
 
 */
 
-package redis_hash_service
+package hash
 
 import (
-
-	"chat-service/hash_service"
-	"log"
-	"github.com/redis/go-redis/v9"
 	"context"
+	"log"
 
+	"github.com/redis/go-redis/v9"
 )
-
 
 // GenerateUniqueHash generates unique random hashes and stores them in Redis.
 //
@@ -57,7 +54,7 @@ func GenerateUniqueHash(
 		}
 
 		// Step 1: Generate a random hash
-		hash := hash_generation_service.GenerateRandomHash(minHashSize, maxHashSize)
+		hash := GenerateRandomHash(minHashSize, maxHashSize)
 
 		// Step 2: Check if it already exists
 		exists, err := client.SIsMember(ctx, uniqueHashSet, hash).Result()
@@ -82,9 +79,6 @@ func GenerateUniqueHash(
 
 	log.Printf("Finished ensuring %d unique hashes exist in set %s", hashQty, uniqueHashSet)
 }
-
-
-
 
 // PopUniqueHash pops a random hash from the `uniqueHashSet` in Redis
 // and optionally adds it to `usedHashSet` to mark it as used.
@@ -123,9 +117,7 @@ func PopUniqueHash(uniqueHashSet string, usedHashSet string, redisClient *redis.
 		log.Printf("Error adding hash to used set: %v", err)
 	}
 
-
 	log.Printf("Popped hash: %s", hash)
 	return hash
 
-	
 }
