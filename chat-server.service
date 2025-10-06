@@ -9,7 +9,7 @@ Group=ubuntu
 WorkingDirectory=/home/ubuntu/chat-service
 
 # Run the compiled Go binary
-ExecStart=/home/ubuntu/chat-service/chat-server
+ExecStart=/home/ubuntu/chat-service/cmd/main
 
 # Automatically restart if the service crashes
 Restart=always
