@@ -144,6 +144,7 @@ func main() {
 	wshandler.WsHandler(mux)
 
 	// wrap HTTP mux with CORS middleware
+	/*
 	c := cors.New(cors.Options{
 
 		// for prod use https://meabhi.me
@@ -154,9 +155,11 @@ func main() {
 	})
 
 	handler := c.Handler(mux)
+	*/
+
 
 	fmt.Println("Server started on :8050")
-	if err := http.ListenAndServe(":8050", handler); err != nil {
+	if err := http.ListenAndServe(":8050", mux); err != nil {
 		log.Fatal(err)
 	}
 
