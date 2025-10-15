@@ -12,7 +12,7 @@ import (
 	"log"
 	"time"
 	"net/http"
-	"github.com/rs/cors"
+	//"github.com/rs/cors"
 
 	"chat-service/api/db_connector"
 
