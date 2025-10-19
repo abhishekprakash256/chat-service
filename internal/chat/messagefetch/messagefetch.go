@@ -124,4 +124,5 @@ func UserMessageFetch(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(resp); err != nil {
 		log.Printf("JSON encode error: %v", err)
 	}
+
 }
