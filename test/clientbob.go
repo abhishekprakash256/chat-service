@@ -27,12 +27,14 @@ type Message struct {
 
 func main() {
 	// hardcode for now
-	chatHash := "DZ5uqxGii"
-	sender := "Bob"
-	recipient := "Ben" // 👈 change this to whoever you want to send messages to
+	chatHash := "MSQQax"
+	sender := "bob"
+	recipient := "ben" // 👈 change this to whoever you want to send messages to
 
 	conn, _, err := websocket.DefaultDialer.Dial(
-		fmt.Sprintf("ws://localhost:8080/chat-server/ws?hash=%s&user=%s", chatHash, sender),
+
+		//ws://localhost:8080/chat-server/ws?hash=%s&user=%s
+		fmt.Sprintf("wss://api.meabhi.me/chat-server/v1/ws/chat?hash=%s&user=%s", chatHash, sender),
 		nil,
 	)
 	if err != nil {
