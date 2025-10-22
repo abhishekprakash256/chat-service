@@ -115,9 +115,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
+	//"time"
 
-	"chat-service/internal/chat/session"
+	//"chat-service/internal/chat/session"
 	"chat-service/internal/config"
 	//wshandler "chat-service/api/ws"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
@@ -227,6 +227,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// make the sender and reciver 
+	
 	var sender string 
 	var receiver string 
 
@@ -246,23 +247,23 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.Hash)
 		return
 	}
-
+	
 	// Successful login
 	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
 
-	// StartSession(hash string , sender string , reciever string )
-	log.Printf("Sender %s and Reciever %s", sender, receiver )
+	// StartSession(hash string , sender string , reciever string ).  , depricated 
+	//log.Printf("Sender %s and Reciever %s", sender, receiver ).  
 
 	// start the session
 	//session.StartSession(data.Hash , sender ,  receiver )
 
 	// data to save in the redis sesssion
-	now := time.Now()
-	ws_connected := 0
-	notify := 0 
+	//now := time.Now()
+	//ws_connected := 0
+	//notify := 0 
 
-	// save the data , remove the save session as only save when ws session is started
-	session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
+	// save the data , remove the save session as only save when ws session is started , depricated 
+	// session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
 
 	// Success response
 	resp := LoginSuccess{

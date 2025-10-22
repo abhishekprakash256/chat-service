@@ -39,7 +39,7 @@ var upgrader = websocket.Upgrader {
 // and validates that the user is part of the chat session.
 //
 // URL Params (query):
-//   - hash  : chat session identifier
+//   - chatID  : chat session identifier
 //   - user  : username attempting to connect
 //
 // Flow:
@@ -52,25 +52,26 @@ var upgrader = websocket.Upgrader {
 func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// get the data from url 
-    hash := r.URL.Query().Get("hash")
+    chatID := r.URL.Query().Get("chatId")
+	sessionID := r.URL.Query().Get("sessionID")
     sender := r.URL.Query().Get("user")
 
 	// get the session id as per machine 
 
 
-    if hash == "" || sender == "" {
-        http.Error(w, "Missing hash or user", http.StatusBadRequest)
+    if chatID == "" || sender == ""  || sessionID == ""{ 
+        http.Error(w, "Missing chatID or user or sessionID ", http.StatusBadRequest)
         return
     }
 
 	// Step 1: Validate against DB
 	ctx := context.Background()
 	pool := config.GlobalDbConn.PgsqlConn
-	loginData, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, hash)
+	loginData, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, chatID)
 
 	if err != nil {
-		http.Error(w, "Invalid hash", http.StatusUnauthorized)
-		log.Printf("WS connection rejected: invalid hash %s", hash)
+		http.Error(w, "Invalid chatID", http.StatusUnauthorized)
+		log.Printf("WS connection rejected: invalid chatID %s", chatID)
 		return
 	}
 
@@ -78,7 +79,7 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	http.Error(w, "Invalid user for this session", http.StatusUnauthorized)
 
-	log.Printf("WS connection rejected: user %s not part of chat %s", sender, hash)
+	log.Printf("WS connection rejected: user %s not part of chat %s", sender, chatID)
 	
 	return
 	
@@ -92,18 +93,19 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	// make the session id , //make the sssion unique per ws connection
-    sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
+	// make the session key 
+	wsKey := fmt.Sprintf("session:%s:%s", chatID, sender)
 
+	//make the sssion unique per ws connection
+    sessionKey := fmt.Sprintf("session:%s:%s:%s", chatID, sender , sessionID)
 
 	// save the session in global ws mapper
-    //config.ClientsWsMapper[sessionID] = conn
-	AddClient(sessionID , conn)
+	AddClient(wsKey , sessionKey , conn *websocket.Conn)
 
     log.Printf("Client connected: %s", sessionID)
 
     // Step 4: Start session + heartbeat
-	session.StartSession(conn , hash , sender)
+	session.StartSession(conn , chatID , sessionID , sender )
 
 	//go start the messagehub
 	go messagehub.HandleMessages()
@@ -117,11 +119,14 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 // When a new connection arrives
 // to add multiple connections in one sessionID
+func AddClient(wsKey string , sessionKey string , conn *websocket.Conn) {
 
-// change this to nested dict for message delivery 
-func AddClient(sessionID string, conn *websocket.Conn) {
-    if _, ok := config.ClientsWsMapper[sessionID]; !ok {
-        config.ClientsWsMapper[sessionID] = []*websocket.Conn{}
+    ClientsWsMapper.Lock()
+    defer ClientsWsMapper.Unlock()
+
+    if ClientsWsMapper.Data[wsKey] == nil {
+        ClientsWsMapper.Data[wsKey] = make(map[string]*websocket.Conn)
     }
-    config.ClientsWsMapper[sessionID] = append(config.ClientsWsMapper[sessionID], conn)
+
+    ClientsWsMapper.Data[key][sessionKey] = conn
 }

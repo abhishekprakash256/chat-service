@@ -22,8 +22,10 @@ var RedisDefaultConfig = RedisDBConfig{
 
 
 //change this as per SessionID as well and make hash as ChatID all places
+//chnage Hash to ChatID and 
 type RedisSessionData struct {
-	Hash      string
+	ChatID      string
+	SessionID   string
 	Sender       string
 	Reciever	string
 	LastSeen    time.Time

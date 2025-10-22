@@ -131,30 +131,35 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 	notify := 0 
 
 	// save the data with ws connected 1 
-	session.SaveSession(data.ChatID, sender , receiver , now , ws_connected, notify)
+	session.SaveSession(data.ChatID, data.SessionID , sender , receiver , now , ws_connected, notify)
 
+
+	wsKey := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
 	// make the sessionid 
-	sessionID := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
+	sessionKey := fmt.Sprintf("session:%s:%s:%s", chatID, sender, sessionID)
 
-	// stop the session id 
-	
-	
+
 	// Also close WebSocket if still in memory 
 	if conns, ok := config.ClientsWsMapper[sessionID]; ok {
 	
 	//go through all the connection and delete all 
-	for _, conn := range conns {
-
-		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Logged out"))
-        
-		conn.Close()
-
-		delete(config.ClientsWsMapper, sessionID)
-
+	// --- Thread-safe WS cleanup ---
+		config.ClientsWsMapper.Lock()
+		if sessionMap, ok := config.ClientsWsMapper.Data[wsKey]; ok {
+			if conn, exists := sessionMap[sessionKey]; exists {
+				_ = conn.WriteMessage(
+					websocket.CloseMessage,
+					websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Logged out"),
+				)
+				conn.Close()
+				delete(sessionMap, sessionKey)
+				log.Printf("Closed and removed WebSocket for %s", sessionKey)
+			}
+			if len(sessionMap) == 0 {
+				delete(config.ClientsWsMapper.Data, wsKey)
+			}
 		}
-    
-	
-	}
+		config.ClientsWsMapper.Unlock()
 
 
 	// Send success response

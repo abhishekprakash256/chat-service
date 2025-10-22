@@ -70,11 +70,11 @@ func ReadMessage(conn *websocket.Conn) {
 
 		// Step 5: Log routing details
 		log.Printf("Routing message from %s to %s in chat %s",
-			incoming.Sender, incoming.Receiver, incoming.Hash)
+			incoming.Sender, incoming.Receiver, incoming.ChatID)
 
 		// Step 6: Save message to PostgreSQL
 		if err := messagestore.SaveMessage(
-			incoming.Sender, incoming.Receiver, incoming.Message, incoming.Hash,
+			incoming.Sender, incoming.Receiver, incoming.Message, incoming.ChatID,
 		); err != nil {
 			log.Println("Message not saved:", err)
 			return

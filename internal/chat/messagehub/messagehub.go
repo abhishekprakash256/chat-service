@@ -39,35 +39,41 @@ func HandleMessages() {
         }
 
         log.Printf("Routing message from %s to %s in chat %s",
-            incoming.Sender, incoming.Receiver, incoming.Hash)
+            incoming.Sender, incoming.Receiver, incoming.ChatID)
 
         // Construct session key for the intended recipient
-        chatID := fmt.Sprintf("session:%s:%s", incoming.Hash, incoming.Receiver)
+        wsKey := fmt.Sprintf("session:%s:%s", incoming.ChatID, incoming.Receiver)
+
+        config.ClientsWsMapper.RLock()
+        sessions, ok := config.ClientsWsMapper.Data[wsKey]
+        config.ClientsWsMapper.RUnlock()
 
         // Look up the recipient connections
-        conns, ok := config.ClientsWsMapper[chatID]
-        if !ok || len(conns) == 0 {
-            log.Printf("Recipient %s not connected for chat %s",
-                incoming.Receiver, incoming.Hash)
+        if !ok || len(sessions) == 0 {
+            log.Printf("Recipient %s not connected for chat %s", incoming.Receiver, incoming.ChatID)
             continue
         }
 
-        // Deliver message to all active connections for that recipient
-        aliveConns := []*websocket.Conn{}
-        for _, conn := range conns {
+       // Deliver message to all active sessions for the recipient
+        config.ClientsWsMapper.Lock()
+        for sessionID, conn := range sessions {
             if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-                log.Printf("Failed to deliver to %s: %v", chatID, err)
+
+                log.Printf("Failed to deliver to %s (session %s): %v", wsKey, sessionID, err)
                 conn.Close()
-                continue // skip dead connection
+                delete(sessions, sessionID)
+                continue
             }
-            aliveConns = append(aliveConns, conn)
         }
 
         // Keep only alive connections
-        if len(aliveConns) > 0 {
-            config.ClientsWsMapper[chatID] = aliveConns
+        if len(sessions) == 0 {
+            delete(config.ClientsWsMapper.Data, wsKey)
         } else {
-            delete(config.ClientsWsMapper, chatID)
+            config.ClientsWsMapper.Data[wsKey] = sessions
         }
+        config.ClientsWsMapper.Unlock()
+        
+
     }
 }
