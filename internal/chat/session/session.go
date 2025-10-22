@@ -1,7 +1,7 @@
 /*
 make the session
 
-
+//can have sessionID unique -- chnages
 type RedisSessionData struct {
 	ChatID      string
 	Sender       string
@@ -49,6 +49,8 @@ import (
 //
 // Returns:
 //   - error if the operation fails, nil otherwise
+
+// add sessionID here now -- chnages 
 func SaveSession(hash string, sender string, receiver string, lastSeen time.Time, wsStatus int, notification int) error {
 	client := config.GlobalDbConn.RedisConn
 	ctx := context.Background()
@@ -129,10 +131,13 @@ func StartSession(conn *websocket.Conn, hash string, sender string) {
 //   - sender: Username of the session owner
 //   - receiver: Opposite user in the chat
 //   - hash: Chat session identifier
+
+//should go through all the sessionID
 func startHeartbeat(conn *websocket.Conn, sender string, receiver string, hash string) {
 	ticker := time.NewTicker(30 * time.Second) // send ping every 30s
 	defer ticker.Stop()
 
+	//session ID changes
 	sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
 
 	for {

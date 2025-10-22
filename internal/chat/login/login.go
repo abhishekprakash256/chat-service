@@ -261,7 +261,7 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	ws_connected := 0
 	notify := 0 
 
-	// save the data
+	// save the data , remove the save session as only save when ws session is started
 	session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
 
 	// Success response

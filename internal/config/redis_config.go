@@ -20,6 +20,8 @@ var RedisDefaultConfig = RedisDBConfig{
 	Port: 6379,
 }
 
+
+//change this as per SessionID as well and make hash as ChatID all places
 type RedisSessionData struct {
 	Hash      string
 	Sender       string

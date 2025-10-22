@@ -55,6 +55,8 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
     hash := r.URL.Query().Get("hash")
     sender := r.URL.Query().Get("user")
 
+	// get the session id as per machine 
+
 
     if hash == "" || sender == "" {
         http.Error(w, "Missing hash or user", http.StatusBadRequest)
@@ -90,8 +92,9 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	// make the session id 
+	// make the session id , //make the sssion unique per ws connection
     sessionID := fmt.Sprintf("session:%s:%s", hash, sender)
+
 
 	// save the session in global ws mapper
     //config.ClientsWsMapper[sessionID] = conn
@@ -114,6 +117,8 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 // When a new connection arrives
 // to add multiple connections in one sessionID
+
+// change this to nested dict for message delivery 
 func AddClient(sessionID string, conn *websocket.Conn) {
     if _, ok := config.ClientsWsMapper[sessionID]; !ok {
         config.ClientsWsMapper[sessionID] = []*websocket.Conn{}

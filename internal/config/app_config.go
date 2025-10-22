@@ -41,6 +41,7 @@ type IncomingMessage struct {
 //var ClientsWsMapper = make(map[string]*websocket.Conn) 
 
 // ClientsWsMapper holds all active WebSocket connections per session:user
+// change to nested mapepr for chatID and sessionID storage
 var ClientsWsMapper = make(map[string][]*websocket.Conn)
 
 //broadcast channel for broadcasting message
