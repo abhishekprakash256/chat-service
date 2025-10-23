@@ -25,7 +25,8 @@ import (
 
 type LogoutRequest struct  {
 
-	ChatID string `json:"Hash"`
+	ChatID string `json:"ChatID"`
+	SessionID string `json:"SessionID"`
 	UserName string `json:"UserName"`
 }
 
@@ -136,37 +137,37 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 
 	wsKey := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
 	// make the sessionid 
-	sessionKey := fmt.Sprintf("session:%s:%s:%s", chatID, sender, sessionID)
+	sessionKey := fmt.Sprintf("session:%s:%s:%s", data.ChatID, sender, data.SessionID)
 
 
-	// Also close WebSocket if still in memory 
-	if conns, ok := config.ClientsWsMapper[sessionID]; ok {
-	
 	//go through all the connection and delete all 
 	// --- Thread-safe WS cleanup ---
-		config.ClientsWsMapper.Lock()
-		if sessionMap, ok := config.ClientsWsMapper.Data[wsKey]; ok {
-			if conn, exists := sessionMap[sessionKey]; exists {
-				_ = conn.WriteMessage(
-					websocket.CloseMessage,
-					websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Logged out"),
-				)
-				conn.Close()
-				delete(sessionMap, sessionKey)
-				log.Printf("Closed and removed WebSocket for %s", sessionKey)
-			}
-			if len(sessionMap) == 0 {
-				delete(config.ClientsWsMapper.Data, wsKey)
-			}
-		}
-		config.ClientsWsMapper.Unlock()
+	config.ClientsWsMapper.Lock()
 
+	if sessionMap, ok := config.ClientsWsMapper.Data[wsKey]; ok {
+		if conn, exists := sessionMap[sessionKey]; exists {
+			_ = conn.WriteMessage(
+				websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Logged out"),
+			)
+			conn.Close()
+			delete(sessionMap, sessionKey)
+			log.Printf("Closed and removed WebSocket for %s", sessionKey)
+		}
+
+		// Clean up top-level key if no sessions remain
+		if len(sessionMap) == 0 {
+			delete(config.ClientsWsMapper.Data, wsKey)
+		}
+	}
+
+	config.ClientsWsMapper.Unlock()
 
 	// Send success response
 	resp := SuccessResponse{
 		Status: "success",
 		Code:   http.StatusOK,
-		Message: fmt.Sprintf("Logged out and session %s removed", sessionID),
+		Message: fmt.Sprintf("Logged out and session %s removed", sessionKey),
 	}
 
 	//make the header
@@ -176,8 +177,7 @@ func LogOutUser(w http.ResponseWriter, r *http.Request ) {
 
 	json.NewEncoder(w).Encode(resp)
 
-	log.Printf("User logged out, session %s removed", sessionID)
+	log.Printf("User logged out, session %s removed", sessionKey)
 
 	
-
-}
+	}

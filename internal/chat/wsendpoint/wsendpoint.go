@@ -35,6 +35,24 @@ var upgrader = websocket.Upgrader {
 }
 
 
+
+
+// When a new connection arrives
+// to add multiple connections in one sessionID
+func AddClient(wsKey string , sessionKey string , conn *websocket.Conn) {
+
+    config.ClientsWsMapper.Lock()
+    defer config.ClientsWsMapper.Unlock()
+
+    if config.ClientsWsMapper.Data[wsKey] == nil {
+        config.ClientsWsMapper.Data[wsKey] = make(map[string]*websocket.Conn)
+    }
+
+    config.ClientsWsMapper.Data[wsKey][sessionKey] = conn
+}
+
+
+
 // WSEndpoint upgrades HTTP connection to WebSocket
 // and validates that the user is part of the chat session.
 //
@@ -100,7 +118,7 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
     sessionKey := fmt.Sprintf("session:%s:%s:%s", chatID, sender , sessionID)
 
 	// save the session in global ws mapper
-	AddClient(wsKey , sessionKey , conn *websocket.Conn)
+	AddClient(wsKey , sessionKey , conn )
 
     log.Printf("Client connected: %s", sessionID)
 
@@ -116,17 +134,3 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 
 
-
-// When a new connection arrives
-// to add multiple connections in one sessionID
-func AddClient(wsKey string , sessionKey string , conn *websocket.Conn) {
-
-    ClientsWsMapper.Lock()
-    defer ClientsWsMapper.Unlock()
-
-    if ClientsWsMapper.Data[wsKey] == nil {
-        ClientsWsMapper.Data[wsKey] = make(map[string]*websocket.Conn)
-    }
-
-    ClientsWsMapper.Data[key][sessionKey] = conn
-}
