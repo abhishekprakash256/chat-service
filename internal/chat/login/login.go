@@ -16,7 +16,7 @@ for registration  Testing--
     "status": "success",
     "code": 200,
     "data": {
-        "hash": "enyVF5JkoV0",
+        "ChatID": "enyVF5JkoV0",
         "userOne": "Sam",
         "userTwo": "Bob"
     }
@@ -26,7 +26,7 @@ for registration  Testing--
     "status": "success",
     "code": 200,
     "data": {
-        "hash": "XWVU7wbbr",
+        "ChatID": "XWVU7wbbr",
         "userOne": "Bob",
         "userTwo": "Ben"
     }
@@ -39,10 +39,10 @@ The key and the field --
 
 | Redis Key             | Data Structure | Fields (example)                                                         |
 | --------------------- | -------------- | ------------------------------------------------------------------------ |
-| `session:abc123:Abhi` | Hash           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:00:00` <br> `notify: 0` |
-| `session:abc123:Anny` | Hash           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:55:00` <br> `notify: 1` |
-| `session:def456:Bob`  | Hash           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:01:00` <br> `notify: 0` |
-| `session:def456:Cara` | Hash           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:50:00` <br> `notify: 1` |
+| `session:abc123:Abhi` | ChatID           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:00:00` <br> `notify: 0` |
+| `session:abc123:Anny` | ChatID           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:55:00` <br> `notify: 1` |
+| `session:def456:Bob`  | ChatID           | `ws_connected: 1` <br> `last_seen: 2025-07-08T20:01:00` <br> `notify: 0` |
+| `session:def456:Cara` | ChatID           | `ws_connected: 0` <br> `last_seen: 2025-07-08T19:50:00` <br> `notify: 1` |
 
 
 HSET session:abc123:Abhi chat_id abc123
@@ -62,9 +62,9 @@ and start hearbeat protocol until logout or endchat
 
 func LoginUser 
 
-params --> hash , user 
+params --> ChatID , user 
 
-hash comes from the link
+ChatID comes from the link
 
 match the user in the pgsql
 create the login
@@ -78,7 +78,7 @@ get the json
 {
 
 UserName : "Abhi"
-hash : "abc123"
+ChatID : "abc123"
 
 }
 
@@ -88,7 +88,7 @@ returns
     "status": "success",
     "code": 200,
     "data": {
-        "hash": "enyVF5JkoV0",
+        "ChatID": "enyVF5JkoV0",
         "sender": "Sam",
 		"reciever": "Ben"
     }	
@@ -125,7 +125,7 @@ import (
 
 // LoginRequest represents the expected JSON body for login requests.
 type LoginRequest struct {
-	Hash     string `json:"Hash"`     // Chat session hash
+	ChatID     string `json:"ChatID"`     // Chat session ChatID
 	UserName string `json:"UserName"` // Username trying to log in
 }
 
@@ -161,14 +161,14 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 //
 // Expected request (POST /chat-server/login):
 //   {
-//     "hash": "abc123",
+//     "ChatID": "abc123",
 //     "username": "Sam"
 //   }
 //
 // Steps performed:
 //   1. Validates that the request method is POST.
 //   2. Parses the JSON request body into LoginRequest.
-//   3. Looks up login data by hash in PostgreSQL.
+//   3. Looks up login data by ChatID in PostgreSQL.
 //   4. Checks if the username matches one of the registered users.
 //   5. Starts a session in Redis (via session.StartSession).
 //   6. Returns a standardized JSON response.
@@ -178,7 +178,7 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 //     "status": "success",
 //     "code": 200,
 //     "data": {
-//       "hash": "abc123",
+//       "ChatID": "abc123",
 //       "username": "Sam"
 //     }
 //   }
@@ -187,7 +187,7 @@ func writeError(w http.ResponseWriter, code int, msg string) {
 //   {
 //     "status": "error",
 //     "code": 401,
-//     "message": "Login Failed Wrong Username or Hash"
+//     "message": "Login Failed Wrong Username or ChatID"
 //   }
 // when login clicked the ChatID and the username will be stored in the localsession storage for the front end 
 // using the sessionStortage 
@@ -214,15 +214,15 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Debug log
-	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.Hash)
+	fmt.Printf("Login attempt: %s for chat %s\n", data.UserName, data.ChatID)
 
 	// Retrieve login record from DB
-	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, data.Hash)
+	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, data.ChatID)
 	
 	if err != nil {
 		
-		writeError(w, http.StatusUnauthorized, "Login Failed: Hash not found")
-		log.Printf("Login failed: hash %s not found (%v)", data.Hash, err)
+		writeError(w, http.StatusUnauthorized, "Login Failed: ChatID not found")
+		log.Printf("Login failed: ChatID %s not found (%v)", data.ChatID, err)
 		return
 	}
 
@@ -243,19 +243,19 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	} else {
 		
 		// username does not match either registered user → fail login
-		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or Hash")
-		log.Printf("Login failed: username %s not valid for hash %s", data.UserName, data.Hash)
+		writeError(w, http.StatusUnauthorized, "Login Failed: Wrong Username or ChatID")
+		log.Printf("Login failed: username %s not valid for ChatID %s", data.UserName, data.ChatID)
 		return
 	}
 	
 	// Successful login
-	log.Printf("Login successful for %s (chat %s)", data.UserName, data.Hash)
+	log.Printf("Login successful for %s (chat %s)", data.UserName, data.ChatID)
 
-	// StartSession(hash string , sender string , reciever string ).  , depricated 
+	// StartSession(ChatID string , sender string , reciever string ).  , depricated 
 	log.Printf("Sender %s and Reciever %s", sender, receiver )
 
 	// start the session
-	//session.StartSession(data.Hash , sender ,  receiver )
+	//session.StartSession(data.ChatID , sender ,  receiver )
 
 	// data to save in the redis sesssion
 	//now := time.Now()
@@ -263,14 +263,14 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 	//notify := 0 
 
 	// save the data , remove the save session as only save when ws session is started , depricated 
-	// session.SaveSession(data.Hash, sender , receiver , now , ws_connected, notify)
+	// session.SaveSession(data.ChatID, sender , receiver , now , ws_connected, notify)
 
 	// Success response
 	resp := LoginSuccess{
 		Status: "success",
 		Code:   http.StatusOK,
 		Data: map[string]string{
-			"hash":     data.Hash,
+			"chatID":     data.ChatID,
 			"sender": data.UserName,
 			"receiver" : receiver , 
 		},

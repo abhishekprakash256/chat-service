@@ -120,7 +120,7 @@ func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 	// save the session in global ws mapper
 	AddClient(wsKey , sessionKey , conn )
 
-    log.Printf("Client connected: %s", sessionID)
+    log.Printf("Client connected: %s", sessionKey)
 
     // Step 4: Start session + heartbeat
 	session.StartSession(conn , chatID , sessionID , sender )
