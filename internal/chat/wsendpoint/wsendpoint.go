@@ -67,25 +67,70 @@ func AddClient(wsKey string , sessionKey string , conn *websocket.Conn) {
 //   4. Save WS connection in ClientsWsMapper
 //   5. Start heartbeat + Redis session tracking
 
+
+
+/*
+func WSEndpoint(w http.ResponseWriter, r *http.Request) {
+    log.Printf("Incoming WS request: %s", r.URL.RawQuery)
+
+    conn, err := upgrader.Upgrade(w, r, nil)
+    if err != nil {
+        log.Printf("Upgrade failed: %v", err)
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    log.Println("WebSocket connection established")
+
+    for {
+        _, msg, err := conn.ReadMessage()
+        if err != nil {
+            log.Println("Disconnected:", err)
+            break
+        }
+        log.Println("Received:", string(msg))
+    }
+}
+*/
+
+
+
 func WSEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	// get the data from url 
-    chatID := r.URL.Query().Get("chatId")
+    chatID := r.URL.Query().Get("chatID")
 	sessionID := r.URL.Query().Get("sessionID")
     sender := r.URL.Query().Get("user")
 
-	// get the session id as per machine 
+	log.Printf("chatid is %s", chatID)
 
+	log.Printf("sessionID is %s", sessionID)
+
+	log.Printf("sender is %s", sender)
+
+
+	// get the session id as per machine 
+	log.Printf("WS connection started")
 
     if chatID == "" || sender == ""  || sessionID == ""{ 
+		log.Printf("WS connection started2")
         http.Error(w, "Missing chatID or user or sessionID ", http.StatusBadRequest)
+		log.Printf("Some value is missing")
+		log.Printf("%s,%s,%s", chatID , sessionID , sender)
         return
     }
+
+	log.Printf("WS connection started3")
 
 	// Step 1: Validate against DB
 	ctx := context.Background()
 	pool := config.GlobalDbConn.PgsqlConn
+
+	log.Printf("WS connection started4")
+
 	loginData, err := pgsqlcrud.GetLoginData(ctx, config.LoginTable , pool, chatID)
+
+	log.Printf("WS connection started5")
 
 	if err != nil {
 		http.Error(w, "Invalid chatID", http.StatusUnauthorized)
