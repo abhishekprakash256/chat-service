@@ -14,7 +14,7 @@ import (
 
 // Message defines the structure sent to the server
 type Message struct {
-	ChatID     string `json:"chatid"`
+	ChatID      string `json:"chatid"`
 	Sender    string `json:"sender"`
 	Recipient string `json:"receiver"`
 	Message   string `json:"message"`
@@ -23,9 +23,9 @@ type Message struct {
 func main() {
 	// hardcode for now
 	ChatID := "qQyvvJ9s"
-	SessionID := "testsess00"
-	sender := "ben"
-	recipient := "bob" // change this to whoever you want to send messages to
+	SessionID := "testsess12"
+	sender := "bob"
+	recipient := "ben" // change this to whoever you want to send messages to
 
 	log.Printf("The chatid is %s",ChatID)
 
