@@ -32,6 +32,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"chat-service/internal/config"
+    
 	rediscrud "chat-service/internal/storage/redis/crud"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
 )
@@ -153,8 +154,9 @@ func startHeartbeat(conn *websocket.Conn, sender, receiver, chatID, sessionID st
             []byte("ping"),
             time.Now().Add(5*time.Second),
         ); err != nil {
-            log.Printf("Heartbeat failed for %s: %v", sessionKey, err)
 
+            log.Printf("Heartbeat failed for %s: %v", sessionKey, err)
+        
             // --- Cleanup begins ---
             conn.Close()
 
@@ -177,6 +179,7 @@ func startHeartbeat(conn *websocket.Conn, sender, receiver, chatID, sessionID st
             log.Printf("Session cleaned up for %s", sessionKey)
             return
         }
+
 
         log.Printf("Heartbeat OK for %s", sessionKey)
     }
