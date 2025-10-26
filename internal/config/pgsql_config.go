@@ -31,6 +31,17 @@ type LoginData struct {
 }
 
 
+type MessageOutData struct {
+	messageid    int
+	chatid       string
+	sender   string
+	receiver string
+	message      string
+	time    time.Time
+	read         bool
+
+}
+
 type MessageData struct {
 	MessageID    int
 	ChatID       string

@@ -32,7 +32,7 @@ type MessageFetchRequest struct {
 
 type MessagesResponse struct {
     ChatID     string    `json:"chatId"`
-    Messages   []config.MessageData `json:"messages"`
+    Messages   []config.OutgoingMessage `json:"messages"`
     Pagination struct {
         HasMore    bool `json:"hasMore"`
         NextCursor int  `json:"nextCursor"`
@@ -108,8 +108,37 @@ func UserMessageFetch(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch messages from DB
 	messageData := pgsqlcrud.GetMessageData(ctx, config.MessageTable, pool, data.ChatID, data.UserName)
+
+	// Convert DB model → OutgoingMessage model
+	outMessages := make([]config.OutgoingMessage, len(messageData))
+
+	for i, m := range messageData {
+		outMessages[i] = config.OutgoingMessage{
+			MessageID: int64(m.MessageID), 
+			ChatID:    m.ChatID,
+			Sender:    m.Sender,
+			Receiver:  m.Receiver,
+			Message:   m.Message,
+			Timestamp: m.Timestamp,
+		}
+	}
+
+	// Build final response
+	resp := MessagesResponse{
+		ChatID:   data.ChatID,
+		Messages: outMessages,
+		Pagination: struct {
+			HasMore    bool `json:"hasMore"`
+			NextCursor int  `json:"nextCursor"`
+		}{
+			HasMore:    false,
+			NextCursor: 0,
+		},
+	}
+
 	
 	// Build response
+	/*
 	resp := MessagesResponse{
 		ChatID:   data.ChatID,
 		Messages: messageData, // <-- ensure pgsqlcrud.GetMessageData returns []Message
@@ -117,6 +146,7 @@ func UserMessageFetch(w http.ResponseWriter, r *http.Request) {
 	// Placeholder pagination (later implement limit/offset or cursor)
 	resp.Pagination.HasMore = false
 	resp.Pagination.NextCursor = 0
+	*/
 
 	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")

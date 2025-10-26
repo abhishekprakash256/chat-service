@@ -54,8 +54,23 @@ func HandleMessages() {
             continue
         }
 
+
+
+
        // Deliver message to all active sessions for the recipient
         config.ClientsWsMapper.Lock()
+
+        /*
+        for sessionID, conn := range sessions {
+
+        if err := conn.WriteJSON(msg); err != nil {
+            log.Printf("Failed to deliver to %s (session %s): %v", wsKey, sessionID, err)
+            conn.Close()
+            delete(sessions, sessionID)
+            continue
+        }
+        }
+        */
         for sessionID, conn := range sessions {
             if err := conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 
@@ -65,6 +80,7 @@ func HandleMessages() {
                 continue
             }
         }
+
 
         // Keep only alive connections
         if len(sessions) == 0 {

@@ -39,6 +39,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 	var messages []config.MessageData
 	for rows.Next() {
 		var msg config.MessageData
+		// chnages here 
 		err := rows.Scan(&msg.MessageID, &msg.ChatID, &msg.Sender, &msg.Receiver, &msg.Message, &msg.Timestamp, &msg.Read)
 		if err != nil {
 			fmt.Println("Row scan failed:", err)
