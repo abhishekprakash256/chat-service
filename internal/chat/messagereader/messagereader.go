@@ -9,6 +9,7 @@ package messagereader
 import (
 	"log"
 	"fmt"
+	//"time"
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"chat-service/internal/config"
@@ -56,7 +57,7 @@ func ReadMessage(conn *websocket.Conn) {
 		}
 
 		// Step 2: Broadcast raw message
-		config.BroadCast <- msg
+		//config.BroadCast <- msg
 
 		// Step 3: Debug log
 		fmt.Println("Raw message:", string(msg))
@@ -68,19 +69,43 @@ func ReadMessage(conn *websocket.Conn) {
 			return
 		}
 
-		// Step 5: Log routing details
-		log.Printf("Routing message from %s to %s in chat %s",
-			incoming.Sender, incoming.Receiver, incoming.ChatID)
-
 		// Step 6: Save message to PostgreSQL
-		if err := messagestore.SaveMessage(
-			incoming.Sender, incoming.Receiver, incoming.Message, incoming.ChatID,
-		); err != nil {
-			log.Println("Message not saved:", err)
-			return
+		messageID, msgTime , err := messagestore.SaveMessage(
+			incoming.Sender,
+			incoming.Receiver,
+			incoming.Message,
+			incoming.ChatID,
+		)
+
+		if err != nil {
+			log.Printf("Failed to save message for chat %s: %v", incoming.ChatID, err)
+			continue
 		}
 
 		log.Println("Message saved successfully in ReadMessage")
+		
+		// prepare out going message
+		// Step 4: Prepare outgoing message
+		outgoingmessage := config.OutgoingMessage{
+			MessageID: messageID,
+			ChatID:    incoming.ChatID,
+			Sender:    incoming.Sender,
+			Receiver:  incoming.Receiver,
+			Message:   incoming.Message,
+			Timestamp:  msgTime ,  // add the time stamp from the db
+		}
+
+		outgoingBytes, err := json.Marshal(outgoingmessage)
+		if err != nil {
+			log.Println("Error marshaling outgoing message:", err)
+			continue
+		}
+
+		// Step 5: Send to broadcast channel
+		config.BroadCast <- outgoingBytes
+
+
+		
 	}
 }
 

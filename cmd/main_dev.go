@@ -96,9 +96,13 @@ func main() {
 	}
 
 	// Insert the message data
-	if !pgsqlcrud.InsertMessageData(ctx, "message", pool, msg) {
-		log.Println("Insert into message failed")
+	messageID, msgTime, err := pgsqlcrud.InsertMessageData(ctx, "message", pool, msg)
+	if err != nil {
+		log.Printf("Insert into message failed: %v", err)
+	} else {
+		log.Printf("Message inserted successfully with ID %d at %s", messageID, msgTime)
 	}
+
 
 	// Step 5: Retrieve login data
 	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, "abc123")

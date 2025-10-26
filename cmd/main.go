@@ -120,9 +120,13 @@ func main() {
 	}
 
 	// Test delete message data
-	if !pgsqlcrud.DeleteMessageData(ctx, "message", pool, "abc123") {
-		log.Println("Delete message failed")
+	messageID, msgTime, err := pgsqlcrud.InsertMessageData(ctx, "message", pool, msg)
+	if err != nil {
+		log.Printf("Insert into message failed: %v", err)
+	} else {
+		log.Printf("Message inserted successfully with ID %d at %s", messageID, msgTime)
 	}
+
 
 	// Test delete login data
 	if !pgsqlcrud.DeleteLoginData(ctx, "login", pool, "abc123") {

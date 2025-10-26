@@ -14,6 +14,7 @@ package pgsql
 import (
 	"context"
 	"fmt"
+	"time"
 	"chat-service/internal/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -86,7 +87,7 @@ func InsertLoginData(ctx context.Context, tableName string, pgconnector *pgxpool
 }
 
 
-
+/*
 func InsertMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, data config.MessageData) bool {
 
 	// insert the data into the message table
@@ -115,6 +116,38 @@ func InsertMessageData(ctx context.Context, tableName string, pgconnector *pgxpo
 	fmt.Println("Message inserted")
 	return true
 }
+*/
+
+func InsertMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, data config.MessageData) (int64, time.Time , error) {
+	query := fmt.Sprintf(`
+		INSERT INTO %s (chat_id, sender_name, receiver_name, message, timestamp, read)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING message_id , timestamp
+	`, tableName)
+
+	var messageID int64
+	var msgTime time.Time
+
+	err := pgconnector.QueryRow(
+		ctx,
+		query,
+		data.ChatID,
+		data.Sender,
+		data.Receiver,
+		data.Message,
+		data.Timestamp,
+		data.Read,
+	).Scan(&messageID, &msgTime)
+
+	if err != nil {
+		fmt.Printf("Insert failed: %v\n", err)
+		return 0, time.Time{} , err
+	}
+
+	fmt.Printf("Message inserted with ID: %d\n", messageID)
+	return messageID, msgTime, nil
+}
+
 
 
 func DeleteLoginData(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, chatID string) bool {

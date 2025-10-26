@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"sync" 
+	"time"
 
 	pgsqlconn "github.com/jackc/pgx/v5/pgxpool"
 
@@ -31,10 +32,22 @@ type RegistrationtData struct {
 
 type IncomingMessage struct {
 
-	ChatID     string `json:"chatid"`
+	ChatID   string `json:"chatid"`
     Sender   string `json:"sender"`
     Receiver string `json:"receiver"`
     Message  string `json:"message"` 
+}
+
+
+
+type OutgoingMessage struct {
+
+	MessageID int64 `json:"messageid"`
+	ChatID   string `json:"chatid"`
+    Sender   string `json:"sender"`
+    Receiver string `json:"receiver"`
+    Message  string `json:"message"` 
+	Timestamp time.Time  `json:"time"`
 }
 
 // make the global dictonary for session:hash:name  to ws clinet 
