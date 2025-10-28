@@ -49,13 +49,12 @@ func HandleMessages() {
         config.ClientsWsMapper.RUnlock()
 
         // Look up the recipient connections
+        
         if !ok || len(sessions) == 0 {
             log.Printf("Recipient %s not connected for chat %s", incoming.Receiver, incoming.ChatID)
             continue
         }
-
-
-
+        
 
        // Deliver message to all active sessions for the recipient
         config.ClientsWsMapper.Lock()

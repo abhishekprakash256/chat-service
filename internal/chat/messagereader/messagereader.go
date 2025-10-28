@@ -56,6 +56,19 @@ func ReadMessage(conn *websocket.Conn) {
 			return
 		}
 
+		// ping pong for client
+		
+		var raw map[string]interface{}
+		if err := json.Unmarshal(msg, &raw); err == nil {
+			// Handle ping from client
+			if raw["type"] == "ping" {
+
+				log.Println("Ping from Client" ,raw["sessionID"])
+				_ = conn.WriteJSON(map[string]string{"type": "pong"})
+				continue
+			}
+		}
+		
 		// Step 2: Broadcast raw message
 		//config.BroadCast <- msg
 
