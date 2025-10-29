@@ -155,8 +155,9 @@ func startHeartbeat(conn *websocket.Conn, sender, receiver, chatID, sessionID st
             time.Now().Add(5*time.Second),
         ); err != nil {
 
-            log.Printf("Heartbeat failed for %s: %v", sessionKey, err)
-        
+            log.Printf("Heartbeat failed for %s and %s: %v", sessionKey, wsKey , err)
+            
+            /* Testing
             // --- Cleanup begins ---
             conn.Close()
 
@@ -175,9 +176,12 @@ func startHeartbeat(conn *websocket.Conn, sender, receiver, chatID, sessionID st
             if err := SaveSession(chatID, sessionID , sender, receiver, now, 0, 0); err != nil {
                 log.Printf("Failed to update session status for %s: %v", sessionKey, err)
             }
+            
 
             log.Printf("Session cleaned up for %s", sessionKey)
             return
+
+            */
         }
 
 
