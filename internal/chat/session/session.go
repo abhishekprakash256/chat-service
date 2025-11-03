@@ -139,53 +139,78 @@ func StartSession(conn *websocket.Conn, chatID string , sessionID string , sende
 //   - chatID: Chat session identifier
 
 func startHeartbeat(conn *websocket.Conn, sender, receiver, chatID, sessionID string) {
-    ticker := time.NewTicker(30 * time.Second) // send ping every 30s
+    ticker := time.NewTicker(30 * time.Second) // ping every 30 seconds
     defer ticker.Stop()
 
     wsKey := fmt.Sprintf("session:%s:%s", chatID, sender)
     sessionKey := fmt.Sprintf("session:%s:%s:%s", chatID, sender, sessionID)
 
+    failCount := 0
+    maxFails := 10
+
     for {
         <-ticker.C
 
-        // Send ping frame
+        // --- Check if this connection is still active in ClientsWsMapper ---
+        config.ClientsWsMapper.RLock()
+        activeConn, exists := config.ClientsWsMapper.Data[wsKey][sessionKey]
+        config.ClientsWsMapper.RUnlock()
+
+        if !exists {
+            log.Printf("[HEARTBEAT] Connection for %s no longer exists in mapper — stopping heartbeat", sessionKey)
+            return
+        }
+
+        // If a new connection replaced this one, stop this goroutine
+        if activeConn != conn {
+            log.Printf("[HEARTBEAT] Outdated connection for %s — another session took over", sessionKey)
+            return
+        }
+
+        // --- Try sending a ping ---
         if err := conn.WriteControl(
             websocket.PingMessage,
             []byte("ping"),
             time.Now().Add(5*time.Second),
         ); err != nil {
+            failCount++
+            log.Printf("[HEARTBEAT] Failed (%d/%d) for %s: %v", failCount, maxFails, sessionKey, err)
 
-            log.Printf("Heartbeat failed for %s and %s: %v", sessionKey, wsKey , err)
-            
-            /* Testing
-            // --- Cleanup begins ---
-            conn.Close()
+            // If too many failures, perform cleanup
+            if failCount >= maxFails {
+                log.Printf("[HEARTBEAT] %s exceeded max failures — cleaning up", sessionKey)
 
-            // remove from ClientsWsMapper safely
-            config.ClientsWsMapper.Lock()
-            if sessions, ok := config.ClientsWsMapper.Data[wsKey]; ok {
-                delete(sessions, sessionKey)
-                if len(sessions) == 0 {
-                    delete(config.ClientsWsMapper.Data, wsKey)
+                // Cleanup only if still active
+                config.ClientsWsMapper.Lock()
+                if sessions, ok := config.ClientsWsMapper.Data[wsKey]; ok {
+                    if storedConn, ok := sessions[sessionKey]; ok && storedConn == conn {
+                        delete(sessions, sessionKey)
+                        if len(sessions) == 0 {
+                            delete(config.ClientsWsMapper.Data, wsKey)
+                        }
+                        log.Printf("[HEARTBEAT] Session %s removed from mapper", sessionKey)
+                    }
                 }
+                config.ClientsWsMapper.Unlock()
+
+                // Mark session as disconnected
+                now := time.Now()
+                if err := SaveSession(chatID, sessionID, sender, receiver, now, 0, 0); err != nil {
+                    log.Printf("[HEARTBEAT] Failed to update session status for %s: %v", sessionKey, err)
+                }
+
+                // Close connection
+                conn.Close()
+                log.Printf("[HEARTBEAT] Cleanup complete for %s", sessionKey)
+                return
             }
-            config.ClientsWsMapper.Unlock()
 
-            // mark session as disconnected in Redis
-            now := time.Now()
-            if err := SaveSession(chatID, sessionID , sender, receiver, now, 0, 0); err != nil {
-                log.Printf("Failed to update session status for %s: %v", sessionKey, err)
-            }
-            
-
-            log.Printf("Session cleaned up for %s", sessionKey)
-            return
-
-            */
+            continue // retry next tick
         }
 
-
-        log.Printf("Heartbeat OK for %s", sessionKey)
+        // --- Success: reset fail counter ---
+        failCount = 0
+        log.Printf("[HEARTBEAT] OK for %s", sessionKey)
     }
 }
 

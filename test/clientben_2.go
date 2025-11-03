@@ -23,7 +23,7 @@ type Message struct {
 func main() {
 	// hardcode for now
 	ChatID := "qQyvvJ9s"
-	SessionID := "testsess02"
+	SessionID := "3f9b3315-9823-4e3b-b5a5-c04b20195f56"
 	sender := "ben"
 	recipient := "bob" // change this to whoever you want to send messages to
 
