@@ -46,8 +46,7 @@ import (
 //       log.Println("Failed to save message:", err)
 //   }
 //
-func SaveMessage(Sender string, Receiver string, Message string, ChatID string) error {
-	
+func SaveMessage(Sender string, Receiver string, Message string, ChatID string) (int64, time.Time, error) {
 	pool := config.GlobalDbConn.PgsqlConn
 	ctx := context.Background()
 
@@ -60,11 +59,13 @@ func SaveMessage(Sender string, Receiver string, Message string, ChatID string) 
 		Read:      false,
 	}
 
-
-	if !pgsqlcrud.InsertMessageData(ctx, config.MessageTable, pool, msg) {
-		return fmt.Errorf("failed to insert message into DB")
+	messageID, msgTime ,err := pgsqlcrud.InsertMessageData(ctx, config.MessageTable, pool, msg)
+	if err != nil {
+		log.Println("failing")
+		return 0, time.Time{}, fmt.Errorf("failed to insert message into DB: %v", err)
 	}
 
-	log.Println("Message saved successfully in SaveMessage")
-	return nil
+	log.Printf("Message saved successfully with ID: %d", messageID)
+	return messageID, msgTime , nil
 }
+

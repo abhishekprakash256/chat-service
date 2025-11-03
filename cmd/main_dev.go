@@ -12,7 +12,7 @@ import (
 	"log"
 	"time"
 	"net/http"
-	//"github.com/rs/cors"
+	"github.com/rs/cors"
 
 	"chat-service/api/db_connector"
 
@@ -96,9 +96,13 @@ func main() {
 	}
 
 	// Insert the message data
-	if !pgsqlcrud.InsertMessageData(ctx, "message", pool, msg) {
-		log.Println("Insert into message failed")
+	messageID, msgTime, err := pgsqlcrud.InsertMessageData(ctx, "message", pool, msg)
+	if err != nil {
+		log.Printf("Insert into message failed: %v", err)
+	} else {
+		log.Printf("Message inserted successfully with ID %d at %s", messageID, msgTime)
 	}
+
 
 	// Step 5: Retrieve login data
 	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, "abc123")
@@ -120,13 +124,9 @@ func main() {
 	}
 
 	// Test delete message data
-	messageID, msgTime, err := pgsqlcrud.InsertMessageData(ctx, "message", pool, msg)
-	if err != nil {
-		log.Printf("Insert into message failed: %v", err)
-	} else {
-		log.Printf("Message inserted successfully with ID %d at %s", messageID, msgTime)
+	if !pgsqlcrud.DeleteMessageData(ctx, "message", pool, "abc123") {
+		log.Println("Delete message failed")
 	}
-
 
 	// Test delete login data
 	if !pgsqlcrud.DeleteLoginData(ctx, "login", pool, "abc123") {
@@ -148,7 +148,7 @@ func main() {
 	wshandler.WsHandler(mux)
 
 	// wrap HTTP mux with CORS middleware
-	/*
+	
 	c := cors.New(cors.Options{
 
 		// for prod use https://meabhi.me
@@ -159,11 +159,11 @@ func main() {
 	})
 
 	handler := c.Handler(mux)
-	*/
+	
 
 
 	fmt.Println("Server started on :8050")
-	if err := http.ListenAndServe(":8050", mux); err != nil {
+	if err := http.ListenAndServe(":8050", handler); err != nil {
 		log.Fatal(err)
 	}
 
