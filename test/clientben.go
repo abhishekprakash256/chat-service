@@ -14,7 +14,7 @@ import (
 
 // Message defines the structure sent to the server
 type Message struct {
-	Hash      string `json:"hash"`
+	ChatID     string `json:"chatid"`
 	Sender    string `json:"sender"`
 	Recipient string `json:"receiver"`
 	Message   string `json:"message"`
@@ -22,12 +22,20 @@ type Message struct {
 
 func main() {
 	// hardcode for now
-	chatHash := "DZ5uqxGii"
-	sender := "Ben"
-	recipient := "Bob" // 👈 change this to whoever you want to send messages to
+	ChatID := "qQyvvJ9s"
+	SessionID := "3f9b3315-49d6-4e3b-b5a5-c04b20195f56"
+	sender := "ben"
+	recipient := "bob" // change this to whoever you want to send messages to
+
+	log.Printf("The chatid is %s",ChatID)
 
 	conn, _, err := websocket.DefaultDialer.Dial(
-		fmt.Sprintf("ws://localhost:8080/chat-server/ws?hash=%s&user=%s", chatHash, sender),
+
+		//ws://localhost:8050/chat-server/v1/ws/chat?hash=%s&user=%s
+		//"wss://api.meabhi.me/chat-server/v1/ws/chat?hash=%s&user=%s
+		//wss://api.meabhi.me/chat-server/v1/ws/chat?hash=%s&user=%s
+		
+		fmt.Sprintf("ws://localhost:8050/chat-server/v1/ws/chat?user=%s&sessionID=%s&chatID=%s", sender, SessionID,ChatID),
 		nil,
 	)
 	if err != nil {
@@ -57,7 +65,7 @@ func main() {
 
 		// Build the JSON message
 		outMsg := Message{
-			Hash:      chatHash,
+			ChatID:      ChatID,
 			Sender:    sender,
 			Recipient: recipient,
 			Message:   text,

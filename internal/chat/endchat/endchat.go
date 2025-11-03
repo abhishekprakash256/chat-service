@@ -14,12 +14,12 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/websocket"
+	//"github.com/gorilla/websocket"
 
 	"chat-service/internal/config"
 	//"chat-service/internal/chat/session"
 	pgsqlcrud "chat-service/internal/storage/pgsql/crud"
-	rediscrud "chat-service/internal/storage/redis/crud"
+	//rediscrud "chat-service/internal/storage/redis/crud"
 )
 
 // EndChatRequest represents the expected logout request payload.
@@ -91,7 +91,7 @@ func UserEndChat(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
 	pool := config.GlobalDbConn.PgsqlConn
-	rdb := config.GlobalDbConn.RedisConn
+	//rdb := config.GlobalDbConn.RedisConn
 
 	// Retrieve login record (chat participants)
 	retrievedLogin, err := pgsqlcrud.GetLoginData(ctx, "login", pool, data.ChatID)
@@ -115,26 +115,12 @@ func UserEndChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Compose session keys
-	sessionIDSender := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
-	sessionIDReceiver := fmt.Sprintf("session:%s:%s", data.ChatID, receiver)
+	wsIDSender := fmt.Sprintf("session:%s:%s", data.ChatID, sender)
+	wsIDReceiver := fmt.Sprintf("session:%s:%s", data.ChatID, receiver)
 
 	// Close all active WebSocket connections
-	closeWebSockets(sessionIDSender)
-	closeWebSockets(sessionIDReceiver)
-
-	// Delete session data from Redis
-	if ok, err := rediscrud.DeleteSessionData(ctx, rdb, sessionIDSender); !ok {
-		log.Printf("Error deleting Redis session %s: %v", sessionIDSender, err)
-		writeError(w, http.StatusInternalServerError, "Failed to clean up sender session")
-		return
-	}
-
-	if ok, err := rediscrud.DeleteSessionData(ctx, rdb, sessionIDReceiver); !ok {
-		log.Printf("Error deleting Redis session %s: %v", sessionIDReceiver, err)
-		writeError(w, http.StatusInternalServerError, "Failed to clean up receiver session")
-		return
-	}
-
+	RemoveAllUserSessions(wsIDSender)
+	RemoveAllUserSessions(wsIDReceiver)
 
 	// Remove chat messages
 	if !pgsqlcrud.DeleteMessageData(ctx, config.MessageTable, pool, data.ChatID) {
@@ -154,15 +140,20 @@ func UserEndChat(w http.ResponseWriter, r *http.Request) {
 
 
 // closeWebSockets safely closes and removes all connections for a session ID.
-func closeWebSockets(sessionID string) {
-	if conns, ok := config.ClientsWsMapper[sessionID]; ok {
-		for _, conn := range conns {
-			// Send close frame before closing
-			_ = conn.WriteMessage(websocket.CloseMessage,
-				websocket.FormatCloseMessage(websocket.CloseNormalClosure, "Chat ended"))
-			_ = conn.Close()
-		}
-		delete(config.ClientsWsMapper, sessionID)
-		log.Printf("Closed all WebSockets for session %s", sessionID)
-	}
+func RemoveAllUserSessions(wsKey string) {
+    
+    config.ClientsWsMapper.Lock()
+    defer config.ClientsWsMapper.Unlock()
+
+    if sessions, ok := config.ClientsWsMapper.Data[wsKey]; ok {
+        for sessionKey, conn := range sessions {
+            conn.Close()
+            delete(sessions, sessionKey)
+            log.Printf("Closed and removed session: %s", sessionKey)
+        }
+        delete(config.ClientsWsMapper.Data, wsKey)
+        log.Printf("Removed all sessions for user: %s", wsKey)
+    }
 }
+
+
