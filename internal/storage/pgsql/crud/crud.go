@@ -24,10 +24,17 @@ import (
 
 
 func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, chatID string, user string) []config.MessageData {
-	query := fmt.Sprintf(`SELECT message_id, chat_id, sender_name, receiver_name, message, timestamp, read 
-	                      FROM %s 
-	                      WHERE chat_id = $1 AND (sender_name = $2 OR receiver_name = $2) 
-	                      ORDER BY timestamp DESC LIMIT 100`, tableName)
+
+	query := fmt.Sprintf(`
+		SELECT * FROM (
+			SELECT message_id, chat_id, sender_name, receiver_name, message, timestamp, read
+			FROM %s
+			WHERE chat_id = $1 AND (sender_name = $2 OR receiver_name = $2)
+			ORDER BY timestamp DESC
+			LIMIT 100
+		) AS sub
+		ORDER BY timestamp ASC
+	`, tableName)
 
 	rows, err := pgconnector.Query(ctx, query, chatID, user)
 	if err != nil {
@@ -52,7 +59,9 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 }
 
 
-//the function to fetch the messageID 
+// the function to fetch the message data using the messageid
+// the function takes the json as chatId , username and messageid
+// gets the message from the messageid and message before
 func GetMessageDataID(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, chatID string, user string , messageid int) []config.MessageData {
 
 	query := fmt.Sprintf(`
