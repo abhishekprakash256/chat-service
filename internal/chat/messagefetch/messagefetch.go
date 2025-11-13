@@ -27,6 +27,7 @@ import (
 type MessageFetchRequest struct {
 	ChatID     string `json:"Hash"`     // Chat session hash
 	UserName string `json:"UserName"` // Username trying to log in
+	MessageID int `json:"MessageID"`  // added for messageid 
 }
 
 
@@ -106,9 +107,22 @@ func UserMessageFetch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch messages from DB
-	messageData := pgsqlcrud.GetMessageData(ctx, config.MessageTable, pool, data.ChatID, data.UserName)
+	// define the messagedata
+	var messageData []config.MessageData
 
+	// add the check for the messageid if present in the json 
+	if data.MessageID == 0 {
+
+	// Fetch messages from DB
+	messageData = pgsqlcrud.GetMessageData(ctx, config.MessageTable, pool, data.ChatID, data.UserName )
+
+	} else {
+	
+	// Get the message using the messageID
+	messageData = pgsqlcrud.GetMessageDataID(ctx, config.MessageTable, pool, data.ChatID, data.UserName , data.MessageID)
+	
+	}
+	
 	// Convert DB model → OutgoingMessage model
 	outMessages := make([]config.OutgoingMessage, len(messageData))
 
