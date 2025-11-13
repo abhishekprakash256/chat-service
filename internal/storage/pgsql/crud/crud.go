@@ -27,7 +27,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 	query := fmt.Sprintf(`SELECT message_id, chat_id, sender_name, receiver_name, message, timestamp, read 
 	                      FROM %s 
 	                      WHERE chat_id = $1 AND (sender_name = $2 OR receiver_name = $2) 
-	                      ORDER BY timestamp`, tableName)
+	                      ORDER BY timestamp DESC LIMIT 100`, tableName)
 
 	rows, err := pgconnector.Query(ctx, query, chatID, user)
 	if err != nil {
@@ -61,7 +61,7 @@ func GetMessageDataID(ctx context.Context, tableName string, pgconnector *pgxpoo
 					WHERE chat_id = $1 
 					AND (sender_name = $2 OR receiver_name = $2)
 					AND message_id < $3
-					ORDER BY timestamp ASC
+					ORDER BY timestamp DESC
 					LIMIT 50
 					`, tableName)
 
