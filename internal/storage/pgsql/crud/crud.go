@@ -62,6 +62,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 // the function to fetch the message data using the messageid
 // the function takes the json as chatId , username and messageid
 // gets the message from the messageid and message before
+// needs to be changed as per frontend reqs
 func GetMessageDataID(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, chatID string, user string , messageid int) []config.MessageData {
 
 	query := fmt.Sprintf(`
