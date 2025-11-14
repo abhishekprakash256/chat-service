@@ -65,7 +65,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 // needs to be changed as per frontend reqs
 func GetMessageDataID(ctx context.Context, tableName string, pgconnector *pgxpool.Pool, chatID string, user string , messageid int) []config.MessageData {
 
-	query_messageid := fmt.Sprintf(`
+	query := fmt.Sprintf(`
 		SELECT * FROM (
 			SELECT message_id, chat_id, sender_name, receiver_name, message, timestamp, read
 			FROM %s
