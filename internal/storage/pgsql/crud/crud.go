@@ -54,7 +54,7 @@ func GetMessageData(ctx context.Context, tableName string, pgconnector *pgxpool.
 		}
 		messages = append(messages, msg)
 	}
-
+	
 	return messages
 }
 
