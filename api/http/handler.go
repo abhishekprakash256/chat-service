@@ -93,5 +93,5 @@ func SetupUserRoutes(mux *http.ServeMux) {
     mux.HandleFunc("/chat-service/v1/users/login", login.LoginUser)              // POST
     mux.HandleFunc("/chat-service/v1/users/logout", logout.LogOutUser)           // POST
     mux.HandleFunc("/chat-service/v1/users/chat/end", endchat.UserEndChat)            // POST
-    mux.HandleFunc("/chat-service/v1/users/chat/messages", messagefetch.UserMessageFetch) // GET
+    mux.HandleFunc("/chat-service/v1/users/chat/messages", messagefetch.UserMessageFetch) // GET 
 }
