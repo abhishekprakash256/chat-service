@@ -67,7 +67,26 @@ func ReadMessage(conn *websocket.Conn) {
 				_ = conn.WriteJSON(map[string]string{"type": "pong"})
 				continue
 			}
+			
+			// handle for the typing
+			if raw["type"] == "typing" {
+
+				log.Println("typing from Client" ,raw["sessionID"]) // for testing
+				
+
+				continue
+
+			}
+
+			// handle for the typingStop
+			if raw["type"] == "typingStop" {
+
+				log.Println("typing stopped from Client" ,raw["sessionID"]) // for testing
+
+				continue
+			}
 		}
+
 		
 		// Step 2: Broadcast raw message
 		//config.BroadCast <- msg
