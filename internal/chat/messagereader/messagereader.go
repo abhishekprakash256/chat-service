@@ -16,6 +16,16 @@ import (
 	"chat-service/internal/chat/messagestore"
 )
 
+// interface for typing message 
+type TypingOutgoingMessage struct {
+
+	ChatID   string `json:"chatid"`
+    Sender   string `json:"sender"`
+    Receiver string `json:"receiver"`
+    Type  string 	`json:"type"` 
+}
+
+
 
 // ReadMessage continuously listens for new WebSocket messages from a client.
 //
@@ -67,12 +77,38 @@ func ReadMessage(conn *websocket.Conn) {
 				_ = conn.WriteJSON(map[string]string{"type": "pong"})
 				continue
 			}
+
+			var typingmsg TypingOutgoingMessage
+
+			if err := json.Unmarshal(msg, &typingmsg); err != nil {
+			log.Println("Invalid message format:", err)
+			return
+			}
 			
 			// handle for the typing
 			if raw["type"] == "typing" {
 
-				log.Println("typing from Client" ,raw["sessionID"]) // for testing
-				
+				log.Println("typing from Client" ) // for testing
+				// need to write the message in channel
+
+				// make the messsage into interface
+				outgoingtypingmessage := TypingOutgoingMessage{
+				ChatID:    typingmsg.ChatID,
+				Sender:    typingmsg.Sender,
+				Receiver:  typingmsg.Receiver,
+				Type:      typingmsg.Type,
+				}
+
+				outgoingBytes, err := json.Marshal(outgoingtypingmessage)
+
+				if err != nil {
+					log.Println("Error marshaling outgoing message:", err)
+					
+					continue
+				}
+
+				// Step 5: Send to broadcast channel
+				config.BroadCast <- outgoingBytes
 
 				continue
 
@@ -81,7 +117,27 @@ func ReadMessage(conn *websocket.Conn) {
 			// handle for the typingStop
 			if raw["type"] == "typingStop" {
 
-				log.Println("typing stopped from Client" ,raw["sessionID"]) // for testing
+				log.Println("typing stopped from Client" ) // for testing
+				// need to write message in the channel 
+
+				// make the messsage into interface
+				outgoingtypingmessage := TypingOutgoingMessage{
+				ChatID:    typingmsg.ChatID,
+				Sender:    typingmsg.Sender,
+				Receiver:  typingmsg.Receiver,
+				Type:      typingmsg.Type,
+				}
+
+				outgoingBytes, err := json.Marshal(outgoingtypingmessage)
+
+				if err != nil {
+					log.Println("Error marshaling outgoing message:", err)
+
+					continue
+				}
+
+				// Step 5: Send to broadcast channel
+				config.BroadCast <- outgoingBytes
 
 				continue
 			}
