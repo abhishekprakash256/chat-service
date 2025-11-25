@@ -49,7 +49,7 @@ type ErrorResponse struct {
 
 // writeError writes a standardized JSON error response.
 func writeError(w http.ResponseWriter, code int, msg string) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json") 
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(ErrorResponse{
 		Status:  "error",
